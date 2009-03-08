@@ -22,42 +22,35 @@ Objects= Hook.o
 
 Target=QuikDel.dylib
 
-all: QuikDel.dylib uninstall
+all: QuikDel.dylib setuid
 
-uninstall:
-		/opt/iphone-sdk/bin/arm-apple-darwin9-gcc -o uninstall uninstall.c
+setuid:
+		/opt/iphone-sdk/bin/arm-apple-darwin9-gcc -o setuid setuid.c
 		CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
 $(Target):	$(Objects)
 		$(Compiler) $(LDFLAGS) -o $@ $^
 		CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
-install:
-		scp $(Target) $(IP):/var/root
-#		scp uninstall $(IP):
-#		ssh $(IP) ldid -S uninstall
-#		ssh $(IP) mv uninstall /usr/libexec/quikdel
-#		ssh $(IP) chmod 6755 /usr/libexec/quikdel/uninstall
-		ssh $(IP) chmod 755 $(Target) 
-		ssh $(IP) ldid -S $(Target)
-		ssh $(IP) mv $(Target) /Library/MobileSubstrate/DynamicLibraries
-		ssh $(IP) killall SpringBoard
-
+install: $(Target) setuid
+		scp quikdel-beta.deb $(IP):
+		ssh $(IP) dpkg -i quikdel-beta.deb
+		ssh $(IP) killall -HUP SpringBoard
 
 %.o:	%.mm
 		$(Compiler) -c $(CFLAGS) $< -o $@
 
 clean:
-		rm -f *.o $(Target) uninstall
+		rm -f *.o $(Target) setuid
 
-package: $(Target) uninstall
+package: $(Target) setuid
 	rm -rf _
 	mkdir -p _/Library/MobileSubstrate/DynamicLibraries
 	mkdir -p _/usr/libexec/quikdel
 	cp $(Target) _/Library/MobileSubstrate/DynamicLibraries
 	cp scripts/* _/usr/libexec/quikdel
-	cp uninstall _/usr/libexec/quikdel
-	chmod 6755 _/usr/libexec/quikdel/uninstall
+	cp setuid _/usr/libexec/quikdel
+	chmod 6755 _/usr/libexec/quikdel/setuid
 	svn export ./DEBIAN _/DEBIAN
 	dpkg-deb -b _ quikdel-beta.deb
 

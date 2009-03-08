@@ -29,7 +29,18 @@ extern "C" void QuikDelInitialize();
 }
 + (id)showHUDonSpringBoard:(id)message;
 + killHUD:(id)hud;
++ (NSInteger)getFinish:(NSString *)text;
 - (id)initWithIcon:(SBIcon *)icon package:(NSString *)pkgName;
 - askDelete;
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex;
 - dealloc;
+@end
+
+@interface QuikDelFinishHandler : NSObject {
+	NSInteger _finish;
+}
+- (id)initWithFinish:(SBIcon *)_SBIcon finish:(NSInteger)finish;
++ (id)finishString:(NSInteger)num;
+- (void)doFinish;
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex;
 @end

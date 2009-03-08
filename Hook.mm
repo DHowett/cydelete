@@ -1,5 +1,8 @@
 #import "Hook.h"
 
+#define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
+//static NSArray *Finishes_;
+
 @implementation QuikDel
 
 + (id)showHUDonSpringBoard:(id)message {
@@ -18,6 +21,16 @@
 	[hud show:NO];
 	//[[sharedSBIconController contentView] removeSubview:hud];
 	[hud release];
+}
+
++ (NSInteger)getFinish:(NSString *)text {
+	static NSArray *Finishes_;
+	if(!Finishes_)
+		Finishes_ = [NSArray arrayWithObjects:@"return", @"reopen", @"restart", @"reload", @"reboot", nil];
+	if([text length] > 0)
+		return [Finishes_ indexOfObject:text];
+	else
+		return NSNotFound;
 }
 
 - (id)initWithIcon:(SBIcon *)icon package:(NSString *)pkgName {
@@ -42,10 +55,11 @@
 		return;
 	}
 
-	NSString *command = [[NSString alloc] initWithFormat:@"/usr/libexec/quikdel/uninstall %@", _pkgName];
+	NSString *command = [[NSString alloc] initWithFormat:@"/usr/libexec/quikdel/setuid /usr/libexec/quikdel/uninstall_.sh %@", _pkgName];
 
 //	id hud = [QuikDel showHUDonSpringBoard:@"Oh God."];
 	NSString *body = __QuikDel_outputForShellCommand(command);
+
 //	[QuikDel killHUD:hud];
 	if(!body) {
 		body = [[NSString alloc] initWithFormat:@"%@ failed uninstall.", _pkgName];
@@ -54,10 +68,14 @@
 		[delView release];
 		[body release];
 	} else {
+		NSInteger finish = [QuikDel getFinish:body];
 		[body release];
 		Class $SBIconController = objc_getClass("SBIconController");
 		id sharedSBIconController = [$SBIconController sharedInstance];
 		[sharedSBIconController uninstallIcon:_SBIcon animate:YES];
+		if(finish != NSNotFound && finish > 1) {
+			id fh = [[QuikDelFinishHandler alloc] initWithFinish:_SBIcon finish:finish];
+		}
 	}
 
 	[self release];
@@ -68,6 +86,57 @@
 	[super dealloc];
 }
 
+@end
+
+@implementation QuikDelFinishHandler
+- (id)initWithFinish:(SBIcon *)_SBIcon finish:(NSInteger)finish {
+	NSString *body = [[NSString alloc] initWithFormat:@"To complete the uninstall of %@, you must %@.", [_SBIcon displayName], [QuikDelFinishHandler finishString:finish]];
+	_finish = finish;
+	UIAlertView *finishView = [[UIAlertView alloc] initWithTitle:@"Action Required" message:body
+		delegate:self cancelButtonTitle:[QuikDelFinishHandler finishString:finish] otherButtonTitles:nil];
+	[finishView show];
+	[finishView release];
+	[body release];
+}
+
++ (id)finishString:(NSInteger)num {
+	switch(num) {
+		default:
+		case 0:
+		case 1:
+			return @"Okay";
+		case 2:
+			return @"Restart SpringBoard";
+		case 3:
+			return @"Reload SpringBoard";
+		case 4:
+			return @"Reboot";
+	}
+}
+
+- (void)doFinish {
+	switch(_finish) {
+		default:
+		case 0:
+		case 1:
+			return;
+		case 2:
+			system("/usr/libexec/quikdel/setuid /bin/launchctl stop com.apple.SpringBoard");
+			break;
+		case 3:
+			system("/usr/libexec/quikdel/setuid /bin/launchctl unload "SpringBoard_"; /usr/libexec/quikdel/setuid /bin/launchctl load "SpringBoard_);
+			break;
+		case 4:
+			system("/usr/libexec/quikdel/setuid /sbin/reboot");
+			break;
+	}
+	return;
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+	[self doFinish];
+	[self release];
+}
 @end
 
 NSMutableString *__QuikDel_outputForShellCommand(NSString *cmd) {
