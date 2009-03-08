@@ -26,11 +26,13 @@ extern "C" void QuikDelInitialize();
 @interface QuikDel : NSObject {
 	SBIcon *_SBIcon;
 	NSString *_pkgName;
+	NSString *_path;
 }
 + (id)showHUDonSpringBoard:(id)message;
 + killHUD:(id)hud;
 + (NSInteger)getFinish:(NSString *)text;
-- (id)initWithIcon:(SBIcon *)icon package:(NSString *)pkgName;
+- (id)initWithIcon:(SBIcon *)icon path:(NSString *)path;
+- (void)postInit:(id)hud;
 - askDelete;
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex;
 - dealloc;

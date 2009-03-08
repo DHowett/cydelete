@@ -8,7 +8,7 @@
 + (id)showHUDonSpringBoard:(id)message {
 	Class $SBIconController = objc_getClass("SBIconController");
 	id sharedSBIconController = [$SBIconController sharedInstance];
-	id aHUD = [[UIProgressHUD alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 320.0f, 240.0f)];
+	id aHUD = [[UIProgressHUD alloc] initWithFrame:CGRectMake(30.0f, 130.0f, 260.0f, 136.0f)];
 	[aHUD setText:[message copy]];
 	[aHUD show:YES];
 	[[sharedSBIconController contentView] addSubview:aHUD];
@@ -33,11 +33,35 @@
 		return NSNotFound;
 }
 
-- (id)initWithIcon:(SBIcon *)icon package:(NSString *)pkgName {
+- (id)initWithIcon:(SBIcon *)icon path:(NSString *)path {
 	self = [super init];
 	_SBIcon = icon;
-	_pkgName = [pkgName copy];
+	_path = [path copy];
 	return self;
+}
+
+- (void)postInit:(id)hud {
+	NSString *dpkgCmd = [[NSString alloc] initWithFormat:@"/usr/libexec/quikdel/owner.sh %@/Info.plist", _path];
+	NSMutableString *dpkgOutput =  __QuikDel_outputForShellCommand(dpkgCmd);
+	[QuikDel killHUD:hud];
+	[dpkgCmd release];
+
+	if(!dpkgOutput) {
+		NSString *body = [[NSString alloc] initWithFormat:@"%@ is not managed by Cydia, but we somehow passed the path check.", _path];
+		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:@"How Bizarre"
+								message:body
+								delegate:nil
+								cancelButtonTitle:@"OK"
+								otherButtonTitles:nil];
+		[alertUnknown show];
+		[alertUnknown release];
+		[self release];
+		return;
+	} else {
+		_pkgName = [dpkgOutput copy];
+		[self askDelete];
+		[dpkgOutput release];
+	}
 }
 
 - askDelete {
@@ -54,13 +78,16 @@
 		[self release];
 		return;
 	}
+	id hud = [QuikDel showHUDonSpringBoard:@"Uninstalling..."];
+	[NSThread detachNewThreadSelector:@selector(uninstall:) toTarget:self withObject:hud];
+}
 
+- (void)uninstall:(id)hud {
 	NSString *command = [[NSString alloc] initWithFormat:@"/usr/libexec/quikdel/setuid /usr/libexec/quikdel/uninstall_.sh %@", _pkgName];
 
-//	id hud = [QuikDel showHUDonSpringBoard:@"Oh God."];
 	NSString *body = __QuikDel_outputForShellCommand(command);
 
-//	[QuikDel killHUD:hud];
+	[QuikDel killHUD:hud];
 	if(!body) {
 		body = [[NSString alloc] initWithFormat:@"%@ failed uninstall.", _pkgName];
 		UIAlertView *delView = [[UIAlertView alloc] initWithTitle:@"Error Uninstalling" message:body delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
@@ -82,6 +109,7 @@
 }
 
 - dealloc {
+	[_path release];
 	[_pkgName release];
 	[super dealloc];
 }
@@ -184,31 +212,8 @@ static void __$QuikDel_closeBoxClicked(SBIcon<QuikDel> *_SBIcon, id fp8) {
 		[_SBIcon __OriginalMethodPrefix_closeBoxClicked:fp8];
 		return;
 	}
-
-	NSString *dpkgCmd = [[NSString alloc] initWithFormat:@"/usr/libexec/quikdel/owner.sh %@/Info.plist", path];
 	id hud = [QuikDel showHUDonSpringBoard:@"Looking Up Package..."];
-	NSMutableString *dpkgOutput =  __QuikDel_outputForShellCommand(dpkgCmd);
-	[QuikDel killHUD:hud];
-	[dpkgCmd release];
-
-	if(!dpkgOutput) {
-		NSString *body = [[NSString alloc] initWithFormat:@"%@ is not managed by Cydia, but we somehow passed the path check.", path];
-		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:@"How Bizarre"
-								message:body
-								delegate:nil
-								cancelButtonTitle:@"OK"
-								otherButtonTitles:nil];
-		[alertUnknown show];
-		[alertUnknown release];
-		[path release];
-		return;
-	} else {
-		QuikDel *qd = [[QuikDel alloc] initWithIcon:_SBIcon package:dpkgOutput];
-		[qd askDelete];
-		[dpkgOutput release];
-//		[_SBIcon completeUninstall];
-//		[qd release];
-	}
+	[NSThread detachNewThreadSelector:@selector(postInit:) toTarget:[[QuikDel alloc] initWithIcon:_SBIcon path:path] withObject:hud];
 }
 
 extern "C" void QuikDelInitialize() {
