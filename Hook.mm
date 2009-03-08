@@ -178,7 +178,9 @@ static void __$QuikDel_closeBoxClicked(SBIcon<QuikDel> *_SBIcon, id fp8) {
 	id sharedSBApplicationController = [$SBApplicationController sharedInstance];
 	path = [[sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]] path];
 
-	if([path hasPrefix:@"/private/var/mobile"]) {
+	if([path isEqualToString:@"/Applications/Web.app"] ||
+		   [path hasPrefix:@"/private/var/mobile"] ||
+		   [path hasPrefix:@"/var/mobile"]) {
 		[_SBIcon __OriginalMethodPrefix_closeBoxClicked:fp8];
 		return;
 	}
@@ -190,13 +192,15 @@ static void __$QuikDel_closeBoxClicked(SBIcon<QuikDel> *_SBIcon, id fp8) {
 	[dpkgCmd release];
 
 	if(!dpkgOutput) {
+		NSString *body = [[NSString alloc] initWithFormat:@"%@ is not managed by Cydia, but we somehow passed the path check.", path];
 		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:@"How Bizarre"
-								message:@"NOT installed via Cydia.\nYou shouldn't see this."
+								message:body
 								delegate:nil
 								cancelButtonTitle:@"OK"
 								otherButtonTitles:nil];
 		[alertUnknown show];
 		[alertUnknown release];
+		[path release];
 		return;
 	} else {
 		QuikDel *qd = [[QuikDel alloc] initWithIcon:_SBIcon package:dpkgOutput];
