@@ -1,0 +1,8 @@
+Package: net.howett.quikdel
+Name: QuikDel
+Version: 0.0.0-1
+Architecture: iphoneos-arm
+Description: QuikDel
+Maintainer: Dustin Howett <dustin@howett.net>
+Author: Dustin Howett <dustin@howett.net>
+Section: Tweaks
