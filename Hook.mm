@@ -2,7 +2,7 @@
 
 #define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
 
-@implementation QuikDel
+@implementation CyDelete
 
 - (void)startHUD:(id)message {
 	[_hud setText:message];
@@ -43,8 +43,8 @@
 }
 
 - (void)closeBoxClicked {
-	NSString *dpkgCmd = [[NSString alloc] initWithFormat:@"/usr/libexec/quikdel/owner.sh %@/Info.plist", _path];
-	NSMutableString *dpkgOutput =  __QuikDel_outputForShellCommand(dpkgCmd);
+	NSString *dpkgCmd = [[NSString alloc] initWithFormat:@"/usr/libexec/cydelete/owner.sh %@/Info.plist", _path];
+	NSMutableString *dpkgOutput =  __CyDelete_outputForShellCommand(dpkgCmd);
 	[self killHUD];
 	[dpkgCmd release];
 
@@ -89,9 +89,9 @@
 }
 
 - (void)uninstall {
-	NSString *command = [[NSString alloc] initWithFormat:@"/usr/libexec/quikdel/setuid /usr/libexec/quikdel/uninstall_.sh %@", _pkgName];
+	NSString *command = [[NSString alloc] initWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_.sh %@", _pkgName];
 
-	NSString *body = __QuikDel_outputForShellCommand(command);
+	NSString *body = __CyDelete_outputForShellCommand(command);
 
 	[self killHUD];
 	if(!body) {
@@ -101,13 +101,13 @@
 		[delView autorelease];
 		[body release];
 	} else {
-		NSInteger finish = [QuikDel getFinish:body];
+		NSInteger finish = [CyDelete getFinish:body];
 		[body release];
 		Class $SBIconController = objc_getClass("SBIconController");
 		id sharedSBIconController = [$SBIconController sharedInstance];
 		[sharedSBIconController uninstallIcon:_SBIcon animate:YES];
 		if(finish != NSNotFound && finish > 1) {
-			id fh = [[QuikDelFinishHandler alloc] initWithFinish:_SBIcon finish:finish];
+			id fh = [[CyDeleteFinishHandler alloc] initWithFinish:_SBIcon finish:finish];
 		}
 	}
 
@@ -125,12 +125,12 @@
 
 @end
 
-@implementation QuikDelFinishHandler
+@implementation CyDeleteFinishHandler
 - (id)initWithFinish:(SBIcon *)_SBIcon finish:(NSInteger)finish {
-	NSString *body = [[NSString alloc] initWithFormat:@"To complete the uninstall of %@, you must %@.", [_SBIcon displayName], [QuikDelFinishHandler finishString:finish]];
+	NSString *body = [[NSString alloc] initWithFormat:@"To complete the uninstall of %@, you must %@.", [_SBIcon displayName], [CyDeleteFinishHandler finishString:finish]];
 	_finish = finish;
 	UIAlertView *finishView = [[UIAlertView alloc] initWithTitle:@"Action Required" message:body
-		delegate:self cancelButtonTitle:[QuikDelFinishHandler finishString:finish] otherButtonTitles:nil];
+		delegate:self cancelButtonTitle:[CyDeleteFinishHandler finishString:finish] otherButtonTitles:nil];
 	[finishView show];
 	[finishView autorelease];
 	[body release];
@@ -158,13 +158,13 @@
 		case 1:
 			return;
 		case 2:
-			system("/usr/libexec/quikdel/setuid /bin/launchctl stop com.apple.SpringBoard");
+			system("/usr/libexec/cydelete/setuid /bin/launchctl stop com.apple.SpringBoard");
 			break;
 		case 3:
-			system("/usr/libexec/quikdel/setuid /bin/launchctl unload "SpringBoard_"; /usr/libexec/quikdel/setuid /bin/launchctl load "SpringBoard_);
+			system("/usr/libexec/cydelete/setuid /bin/launchctl unload "SpringBoard_"; /usr/libexec/cydelete/setuid /bin/launchctl load "SpringBoard_);
 			break;
 		case 4:
-			system("/usr/libexec/quikdel/setuid /sbin/reboot");
+			system("/usr/libexec/cydelete/setuid /sbin/reboot");
 			break;
 	}
 	return;
@@ -176,7 +176,7 @@
 }
 @end
 
-NSMutableString *__QuikDel_outputForShellCommand(NSString *cmd) {
+NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd) {
 	FILE *fp;
 	char buf[1024];
 	NSMutableString* finalRet = [[NSMutableString alloc] init];
@@ -199,7 +199,7 @@ NSMutableString *__QuikDel_outputForShellCommand(NSString *cmd) {
 }
 
 
-static BOOL __$QuikDel_allowsCloseBox(SBIcon<QuikDel> *_SBIcon) {
+static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
 	if([_SBIcon __OriginalMethodPrefix_allowsCloseBox]) return YES;
 
 	NSString *bundle = [_SBIcon displayIdentifier];
@@ -208,7 +208,7 @@ static BOOL __$QuikDel_allowsCloseBox(SBIcon<QuikDel> *_SBIcon) {
 	else return YES;
 }
 
-static void __$QuikDel_closeBoxClicked(SBIcon<QuikDel> *_SBIcon, id fp8) {
+static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 
 	NSString *path;
 	Class $SBApplicationController = objc_getClass("SBApplicationController");
@@ -221,16 +221,16 @@ static void __$QuikDel_closeBoxClicked(SBIcon<QuikDel> *_SBIcon, id fp8) {
 		[_SBIcon __OriginalMethodPrefix_closeBoxClicked:fp8];
 		return;
 	}
-	id qd = [[QuikDel alloc] initWithIcon:_SBIcon path:path];
+	id qd = [[CyDelete alloc] initWithIcon:_SBIcon path:path];
 	[qd _closeBoxClicked];
 	[qd autorelease];
 }
 
-extern "C" void QuikDelInitialize() {
+extern "C" void CyDeleteInitialize() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	Class _$SBIcon = objc_getClass("SBIcon");
-	MSHookMessage(_$SBIcon, @selector(allowsCloseBox), (IMP) &__$QuikDel_allowsCloseBox, "__OriginalMethodPrefix_");
-	MSHookMessage(_$SBIcon, @selector(closeBoxClicked:), (IMP) &__$QuikDel_closeBoxClicked, "__OriginalMethodPrefix_");
+	MSHookMessage(_$SBIcon, @selector(allowsCloseBox), (IMP) &__$CyDelete_allowsCloseBox, "__OriginalMethodPrefix_");
+	MSHookMessage(_$SBIcon, @selector(closeBoxClicked:), (IMP) &__$CyDelete_closeBoxClicked, "__OriginalMethodPrefix_");
 
 	[pool release];
 }

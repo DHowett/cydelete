@@ -1,8 +1,8 @@
-Package: net.howett.quikdel
-Name: QuikDel
+Package: net.howett.cydelete
+Name: CyDelete
 Version: 0.0.0-1
 Architecture: iphoneos-arm
-Description: QuikDel
+Description: Delete Cydia packages from SpringBoard, just like App Store applications!
 Maintainer: Dustin Howett <dustin@howett.net>
 Author: Dustin Howett <dustin@howett.net>
 Section: Tweaks

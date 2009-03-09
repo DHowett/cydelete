@@ -7,7 +7,7 @@ LDFLAGS=	-lobjc \
 		-framework CoreFoundation \
 		-multiply_defined suppress \
 		-dynamiclib \
-		-init _QuikDelInitialize \
+		-init _CyDeleteInitialize \
 		-Wall \
 		-Werror \
 		-lsubstrate \
@@ -20,9 +20,9 @@ CFLAGS= -dynamiclib
 
 Objects= Hook.o
 
-Target=QuikDel.dylib
+Target=CyDelete.dylib
 
-all: QuikDel.dylib setuid
+all: CyDelete.dylib setuid
 
 setuid:
 		/opt/iphone-sdk/bin/arm-apple-darwin9-gcc -o setuid setuid.c
@@ -33,8 +33,8 @@ $(Target):	$(Objects)
 		CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
 install: $(Target) setuid
-		scp quikdel-beta.deb $(IP):
-		ssh $(IP) dpkg -i quikdel-beta.deb
+		scp cydelete-beta.deb $(IP):
+		ssh $(IP) dpkg -i cydelete-beta.deb
 		ssh $(IP) killall -HUP SpringBoard
 
 %.o:	%.mm
@@ -46,11 +46,11 @@ clean:
 package: $(Target) setuid
 	rm -rf _
 	mkdir -p _/Library/MobileSubstrate/DynamicLibraries
-	mkdir -p _/usr/libexec/quikdel
+	mkdir -p _/usr/libexec/cydelete
 	cp $(Target) _/Library/MobileSubstrate/DynamicLibraries
-	cp scripts/* _/usr/libexec/quikdel
-	cp setuid _/usr/libexec/quikdel
-	chmod 6755 _/usr/libexec/quikdel/setuid
+	cp scripts/* _/usr/libexec/cydelete
+	cp setuid _/usr/libexec/cydelete
+	chmod 6755 _/usr/libexec/cydelete/setuid
 	svn export ./DEBIAN _/DEBIAN
-	dpkg-deb -b _ quikdel-beta.deb
+	dpkg-deb -b _ cydelete-beta.deb
 
