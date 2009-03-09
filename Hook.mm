@@ -1,26 +1,21 @@
 #import "Hook.h"
 
 #define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
-//static NSArray *Finishes_;
 
 @implementation QuikDel
 
-+ (id)showHUDonSpringBoard:(id)message {
-	Class $SBIconController = objc_getClass("SBIconController");
-	id sharedSBIconController = [$SBIconController sharedInstance];
-	id aHUD = [[UIProgressHUD alloc] initWithFrame:CGRectMake(30.0f, 130.0f, 260.0f, 136.0f)];
-	[aHUD setText:[message copy]];
-	[aHUD show:YES];
-	[[sharedSBIconController contentView] addSubview:aHUD];
-	return aHUD;
+- (void)startHUD:(id)message {
+	[_hud setText:message];
+	[_hud show:YES];
+	[_win makeKeyAndVisible];
+	[_win addSubview:_hud];
 }
 
-+ killHUD:(id)hud {
-	Class $SBIconController = objc_getClass("SBIconController");
-	id sharedSBIconController = [$SBIconController sharedInstance];
-	[hud show:NO];
-	//[[sharedSBIconController contentView] removeSubview:hud];
-	[hud release];
+- (void)killHUD {
+	[_hud show:NO];
+	[_hud removeFromSuperview];
+	[_win resignKeyWindow];
+	[_win setHidden:YES];
 }
 
 + (NSInteger)getFinish:(NSString *)text {
@@ -36,14 +31,21 @@
 - (id)initWithIcon:(SBIcon *)icon path:(NSString *)path {
 	self = [super init];
 	_SBIcon = icon;
-	_path = [path copy];
+	_path = [path retain];
+	_win = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+	_hud = [[UIProgressHUD alloc] initWithWindow:_win];
 	return self;
 }
 
-- (void)postInit:(id)hud {
+- (void)_closeBoxClicked {
+	[self startHUD:@"Looking Up Package..."];
+	[NSThread detachNewThreadSelector:@selector(closeBoxClicked) toTarget:self withObject:nil];
+}
+
+- (void)closeBoxClicked {
 	NSString *dpkgCmd = [[NSString alloc] initWithFormat:@"/usr/libexec/quikdel/owner.sh %@/Info.plist", _path];
 	NSMutableString *dpkgOutput =  __QuikDel_outputForShellCommand(dpkgCmd);
-	[QuikDel killHUD:hud];
+	[self killHUD];
 	[dpkgCmd release];
 
 	if(!dpkgOutput) {
@@ -54,45 +56,49 @@
 								cancelButtonTitle:@"OK"
 								otherButtonTitles:nil];
 		[alertUnknown show];
-		[alertUnknown release];
+		[alertUnknown autorelease];
 		[self release];
-		return;
 	} else {
 		_pkgName = [dpkgOutput copy];
-		[self askDelete];
 		[dpkgOutput release];
+		[self askDelete];
 	}
 }
 
-- askDelete {
+// The [self retain] here does NOT seem right.
+- (void)askDelete {
 	NSString *title = [[NSString alloc] initWithFormat:@"Delete \"%@\"", [_SBIcon displayName]];
 	NSString *body = [[NSString alloc] initWithFormat:@"Deleting \"%@\" will uninstall \"%@\"", [_SBIcon displayName], _pkgName];
-	UIAlertView *delView = [[UIAlertView alloc] initWithTitle:title message:body delegate:self cancelButtonTitle:@"Delete" otherButtonTitles:@"Cancel", nil];
+	UIAlertView *delView = [[UIAlertView alloc] initWithTitle:title message:body delegate:[self retain] cancelButtonTitle:@"Delete" otherButtonTitles:@"Cancel", nil];
 	[delView show];
 	[title release];
 	[body release];
 }
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+	[alertView release];
 	if(buttonIndex == 1) {
-		[self release];
 		return;
 	}
-	id hud = [QuikDel showHUDonSpringBoard:@"Uninstalling..."];
-	[NSThread detachNewThreadSelector:@selector(uninstall:) toTarget:self withObject:hud];
+	[self _uninstall];
 }
 
-- (void)uninstall:(id)hud {
+- (void)_uninstall {
+	[self startHUD:@"Uninstalling..."];
+	[NSThread detachNewThreadSelector:@selector(uninstall) toTarget:self withObject:nil];
+}
+
+- (void)uninstall {
 	NSString *command = [[NSString alloc] initWithFormat:@"/usr/libexec/quikdel/setuid /usr/libexec/quikdel/uninstall_.sh %@", _pkgName];
 
 	NSString *body = __QuikDel_outputForShellCommand(command);
 
-	[QuikDel killHUD:hud];
+	[self killHUD];
 	if(!body) {
 		body = [[NSString alloc] initWithFormat:@"%@ failed uninstall.", _pkgName];
 		UIAlertView *delView = [[UIAlertView alloc] initWithTitle:@"Error Uninstalling" message:body delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
 		[delView show];
-		[delView release];
+		[delView autorelease];
 		[body release];
 	} else {
 		NSInteger finish = [QuikDel getFinish:body];
@@ -109,6 +115,9 @@
 }
 
 - dealloc {
+	[self killHUD];
+	[_hud release];
+	[_win release];
 	[_path release];
 	[_pkgName release];
 	[super dealloc];
@@ -123,7 +132,7 @@
 	UIAlertView *finishView = [[UIAlertView alloc] initWithTitle:@"Action Required" message:body
 		delegate:self cancelButtonTitle:[QuikDelFinishHandler finishString:finish] otherButtonTitles:nil];
 	[finishView show];
-	[finishView release];
+	[finishView autorelease];
 	[body release];
 }
 
@@ -212,8 +221,9 @@ static void __$QuikDel_closeBoxClicked(SBIcon<QuikDel> *_SBIcon, id fp8) {
 		[_SBIcon __OriginalMethodPrefix_closeBoxClicked:fp8];
 		return;
 	}
-	id hud = [QuikDel showHUDonSpringBoard:@"Looking Up Package..."];
-	[NSThread detachNewThreadSelector:@selector(postInit:) toTarget:[[QuikDel alloc] initWithIcon:_SBIcon path:path] withObject:hud];
+	id qd = [[QuikDel alloc] initWithIcon:_SBIcon path:path];
+	[qd _closeBoxClicked];
+	[qd autorelease];
 }
 
 extern "C" void QuikDelInitialize() {

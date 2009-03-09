@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import <UIKit/UIWindow.h>
 #import <UIKit/UIInterface.h>
 #import <UIKit/UIAlert.h>
 #import <UIKit/UIScreen.h>
@@ -23,22 +24,27 @@ static BOOL __$QuikDel_allowsCloseBox(SBIcon<QuikDel> *_SBIcon);
 static void __$QuikDel_closeBoxClicked(SBIcon<QuikDel> *_SBIcon, id fp8);
 extern "C" void QuikDelInitialize();
 
-@interface QuikDel : NSObject {
+@interface QuikDel : NSObject<UIAlertViewDelegate> {
 	SBIcon *_SBIcon;
 	NSString *_pkgName;
 	NSString *_path;
+	UIProgressHUD *_hud;
+	UIWindow *_win;
 }
-+ (id)showHUDonSpringBoard:(id)message;
-+ killHUD:(id)hud;
+- (void)startHUD:(id)message;
+- (void)killHUD;
 + (NSInteger)getFinish:(NSString *)text;
 - (id)initWithIcon:(SBIcon *)icon path:(NSString *)path;
-- (void)postInit:(id)hud;
-- askDelete;
+- (void)_closeBoxClicked;
+- (void)closeBoxClicked;
+- (void)_uninstall;
+- (void)uninstall;
+- (void)askDelete;
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex;
 - dealloc;
 @end
 
-@interface QuikDelFinishHandler : NSObject {
+@interface QuikDelFinishHandler : NSObject<UIAlertViewDelegate> {
 	NSInteger _finish;
 }
 - (id)initWithFinish:(SBIcon *)_SBIcon finish:(NSInteger)finish;
