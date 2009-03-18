@@ -28,116 +28,8 @@
 		return NSNotFound;
 }
 
-- (id)initWithIcon:(SBIcon *)icon path:(NSString *)path {
-	self = [super init];
-	_SBIcon = icon;
-	_path = [path retain];
-	_win = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-	_hud = [[UIProgressHUD alloc] initWithWindow:_win];
-	return self;
-}
-
-- (void)_closeBoxClicked {
-	[self startHUD:@"Looking Up Package..."];
-	[NSThread detachNewThreadSelector:@selector(closeBoxClicked) toTarget:self withObject:nil];
-}
-
-- (void)closeBoxClicked {
-	NSString *dpkgCmd = [[NSString alloc] initWithFormat:@"/usr/libexec/cydelete/owner.sh %@/Info.plist", _path];
-	NSMutableString *dpkgOutput =  __CyDelete_outputForShellCommand(dpkgCmd);
-	[self killHUD];
-	[dpkgCmd release];
-
-	if(!dpkgOutput) {
-		NSString *body = [[NSString alloc] initWithFormat:@"%@ is not managed by Cydia, but we somehow passed the path check.", _path];
-		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:@"How Bizarre"
-								message:body
-								delegate:nil
-								cancelButtonTitle:@"OK"
-								otherButtonTitles:nil];
-		[alertUnknown show];
-		[alertUnknown autorelease];
-		[self release];
-	} else {
-		_pkgName = [dpkgOutput copy];
-		[dpkgOutput release];
-		[self askDelete];
-	}
-}
-
-// The [self retain] here does NOT seem right.
-- (void)askDelete {
-	NSString *title = [[NSString alloc] initWithFormat:@"Delete \"%@\"", [_SBIcon displayName]];
-	NSString *body = [[NSString alloc] initWithFormat:@"Deleting \"%@\" will uninstall \"%@\"", [_SBIcon displayName], _pkgName];
-	UIAlertView *delView = [[UIAlertView alloc] initWithTitle:title message:body delegate:[self retain] cancelButtonTitle:@"Delete" otherButtonTitles:@"Cancel", nil];
-	[delView show];
-	[title release];
-	[body release];
-}
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-	[alertView release];
-	if(buttonIndex == 1) {
-		return;
-	}
-	[self _uninstall];
-}
-
-- (void)_uninstall {
-	[self startHUD:@"Uninstalling..."];
-	[NSThread detachNewThreadSelector:@selector(uninstall) toTarget:self withObject:nil];
-}
-
-- (void)uninstall {
-	NSString *command = [[NSString alloc] initWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_.sh %@", _pkgName];
-
-	NSString *body = __CyDelete_outputForShellCommand(command);
-
-	[self killHUD];
-	if(!body) {
-		body = [[NSString alloc] initWithFormat:@"%@ failed uninstall.", _pkgName];
-		UIAlertView *delView = [[UIAlertView alloc] initWithTitle:@"Error Uninstalling" message:body delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
-		[delView show];
-		[delView autorelease];
-		[body release];
-	} else {
-		NSInteger finish = [CyDelete getFinish:body];
-		[body release];
-		Class $SBIconController = objc_getClass("SBIconController");
-		id sharedSBIconController = [$SBIconController sharedInstance];
-		[sharedSBIconController uninstallIcon:_SBIcon animate:YES];
-		if(finish != NSNotFound && finish > 1) {
-			id fh = [[CyDeleteFinishHandler alloc] initWithFinish:_SBIcon finish:finish];
-		}
-	}
-
-	[self release];
-}
-
-- dealloc {
-	[self killHUD];
-	[_hud release];
-	[_win release];
-	[_path release];
-	[_pkgName release];
-	[super dealloc];
-}
-
-@end
-
-@implementation CyDeleteFinishHandler
-- (id)initWithFinish:(SBIcon *)_SBIcon finish:(NSInteger)finish {
-	NSString *body = [[NSString alloc] initWithFormat:@"To complete the uninstall of %@, you must %@.", [_SBIcon displayName], [CyDeleteFinishHandler finishString:finish]];
-	_finish = finish;
-	UIAlertView *finishView = [[UIAlertView alloc] initWithTitle:@"Action Required" message:body
-		delegate:self cancelButtonTitle:[CyDeleteFinishHandler finishString:finish] otherButtonTitles:nil];
-	[finishView show];
-	[finishView autorelease];
-	[body release];
-}
-
-+ (id)finishString:(NSInteger)num {
-	switch(num) {
++ (NSString *)getFinishString:(NSInteger)finish {
+	switch(finish) {
 		default:
 		case 0:
 		case 1:
@@ -151,7 +43,128 @@
 	}
 }
 
-- (void)doFinish {
+- (id)initWithIcon:(SBIcon *)icon path:(NSString *)path {
+	self = [super init];
+	_finish = -1;
+	_SBIcon = [icon retain];
+	_path = [path retain];
+	_win = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+	_hud = [[UIProgressHUD alloc] initWithWindow:_win];
+	return self;
+}
+
+- (void)_closeBoxClicked {
+	[self startHUD:@"Looking Up Package..."];
+	[NSThread detachNewThreadSelector:@selector(closeBoxClicked_thread:) toTarget:self withObject:[NSThread currentThread]];
+}
+
+- (void)closeBoxClicked_thread:(id)callingThread {
+	Class $SBApplicationController = objc_getClass("SBApplicationController");
+	id sharedSBApplicationController = [$SBApplicationController sharedInstance];
+	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
+	NSString *bundle = [[app bundle] bundleIdentifier];
+	NSString *title = [app displayName];
+	NSString *dpkgCmd = [NSString stringWithFormat:@"/usr/libexec/cydelete/owner.sh \"%@\" \"%@\" \"%@/Info.plist\"", bundle, title, _path];
+	NSMutableString *dpkgOutput =  __CyDelete_outputForShellCommand(dpkgCmd);
+	[self killHUD];
+	[self performSelector:@selector(closeBoxClicked_finish:) onThread:callingThread withObject:dpkgOutput waitUntilDone:NO];
+}
+
+- (void)closeBoxClicked_finish:(id)dpkgOutput {
+	if(!dpkgOutput) {
+		NSString *body = [[NSString alloc] initWithFormat:@"%@ is not managed by Cydia, but we somehow passed the path check.", _path];
+		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:@"How Bizarre"
+								message:body
+								delegate:nil
+								cancelButtonTitle:@"OK"
+								otherButtonTitles:nil];
+		[body release];
+		[alertUnknown show];
+		[alertUnknown release];
+		return;
+	} else {
+		_pkgName = [dpkgOutput copy];
+		[self askDelete];
+		return;
+	}
+}
+
+// The [self retain] here does NOT seem right.
+- (void)askDelete {
+	NSString *title = [NSString stringWithFormat:@"Delete \"%@\"", [_SBIcon displayName]];
+	NSString *body = [NSString stringWithFormat:@"Deleting \"%@\" will uninstall \"%@\"", [_SBIcon displayName], _pkgName];
+	id delSheet = [[[UIActionSheet alloc]
+			initWithTitle:title
+			buttons:[NSArray arrayWithObjects:@"Delete", @"Cancel", nil]
+			defaultButtonIndex:2
+			delegate:[self retain]
+			context:@"askDelete"]
+		autorelease];
+	[delSheet setNumberOfRows:1];
+	[delSheet setBodyText:body];
+	[delSheet popupAlertAnimated:YES];
+}
+
+- (void)alertSheet:(UIActionSheet *)alertSheet buttonClicked:(NSInteger)buttonIndex {
+	NSString *context = [alertSheet context];
+	[alertSheet dismiss];
+	if([context isEqualToString:@"askDelete"]) {
+		if(buttonIndex == 1) {
+			[self _uninstall];
+		}
+	} else if([context isEqualToString:@"finish"]) {
+		[self finishUninstall];
+	}
+}
+
+- (void)_uninstall {
+	[self startHUD:@"Uninstalling..."];
+	[NSThread detachNewThreadSelector:@selector(uninstall_thread:) toTarget:self withObject:[NSThread currentThread]];
+}
+
+- (void)uninstall_thread:(NSThread *)callingThread {
+	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_.sh %@", _pkgName];
+	NSString *body = __CyDelete_outputForShellCommand(command);
+	[self killHUD];
+	[self performSelector:@selector(uninstalled:) onThread:callingThread withObject:body waitUntilDone:NO];
+}
+
+- (void)uninstalled:(NSString *)body {
+	if(!body) {
+		body = [[NSString alloc] initWithFormat:@"%@ failed uninstall.", _pkgName];
+		UIAlertView *delView = [[UIAlertView alloc] initWithTitle:@"Error Uninstalling" message:body delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
+		[delView show];
+		[delView release];
+		[body release];
+	} else {
+		Class $SBIconController = objc_getClass("SBIconController");
+		id sharedSBIconController = [$SBIconController sharedInstance];
+		[sharedSBIconController uninstallIcon:_SBIcon animate:YES];
+		if([body length] > 0) {
+			_finish = [CyDelete getFinish:body];
+			if(_finish != NSNotFound && _finish > 1) {
+				[self notifyFinish];
+			}
+		}
+	}
+
+	[self autorelease];
+}
+
+- (void)notifyFinish {
+	NSString *body = [NSString stringWithFormat:@"To complete the uninstall of %@, you must %@.", [_SBIcon displayName], [CyDelete getFinishString:_finish]];
+	id finishSheet = [[[UIActionSheet alloc]
+			initWithTitle:@"Action Required"
+			buttons:[NSArray arrayWithObjects:[CyDelete getFinishString:_finish], nil]
+			defaultButtonIndex:1
+			delegate:self
+			context:@"finish"]
+		autorelease];
+	[finishSheet setBodyText:body];
+	[finishSheet popupAlertAnimated:YES];
+}
+
+- (void)finishUninstall {
 	switch(_finish) {
 		default:
 		case 0:
@@ -170,25 +183,30 @@
 	return;
 }
 
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-	[self doFinish];
-	[self release];
+- dealloc {
+	[self killHUD];
+	[_hud release];
+	[_win release];
+	[_path release];
+	[_pkgName release];
+	[_SBIcon release];
+	[super dealloc];
 }
+
 @end
 
 NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd) {
 	FILE *fp;
 	char buf[1024];
-	NSMutableString* finalRet = [[NSMutableString alloc] init];
+	NSMutableString* finalRet;
 
 	fp = popen([cmd UTF8String], "r");
 	if (fp == NULL) {
 		return nil;
 	}
 
-	while (fgets(buf, 1024, fp) != NULL) {
-		[finalRet appendString: [NSString stringWithUTF8String:buf]];
-	}
+	fgets(buf, 1024, fp);
+	finalRet = [NSString stringWithUTF8String:buf];
 
 	if(pclose(fp) != 0) {
 		[finalRet release];
@@ -223,7 +241,6 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 	}
 	id qd = [[CyDelete alloc] initWithIcon:_SBIcon path:path];
 	[qd _closeBoxClicked];
-	[qd autorelease];
 }
 
 extern "C" void CyDeleteInitialize() {
