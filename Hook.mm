@@ -72,8 +72,8 @@
 
 - (void)closeBoxClicked_finish:(id)dpkgOutput {
 	if(!dpkgOutput) {
-		NSString *body = [[NSString alloc] initWithFormat:@"%@ is not managed by Cydia, but we somehow passed the path check.", _path];
-		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:@"How Bizarre"
+		NSString *body = [[NSString alloc] initWithFormat:@"%@ was not installed by Cydia. You should not see this message, unless you installed this application yourself, in which case, I cannot remove it for you.", [_SBIcon displayName]];
+		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:@"Not Installed by Cydia"
 								message:body
 								delegate:nil
 								cancelButtonTitle:@"OK"
