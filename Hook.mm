@@ -218,7 +218,7 @@ NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd) {
 
 
 static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
-	if([_SBIcon __OriginalMethodPrefix_allowsCloseBox]) return YES;
+	if([_SBIcon __CD_allowsCloseBox]) return YES;
 
 	NSString *bundle = [_SBIcon displayIdentifier];
 	if([bundle hasPrefix:@"com.apple."]) return NO;
@@ -236,7 +236,7 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 	if([path isEqualToString:@"/Applications/Web.app"] ||
 		   [path hasPrefix:@"/private/var/mobile"] ||
 		   [path hasPrefix:@"/var/mobile"]) {
-		[_SBIcon __OriginalMethodPrefix_closeBoxClicked:fp8];
+		[_SBIcon __CD_closeBoxClicked:fp8];
 		return;
 	}
 	id qd = [[CyDelete alloc] initWithIcon:_SBIcon path:path];
@@ -246,8 +246,8 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 extern "C" void CyDeleteInitialize() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	Class _$SBIcon = objc_getClass("SBIcon");
-	MSHookMessage(_$SBIcon, @selector(allowsCloseBox), (IMP) &__$CyDelete_allowsCloseBox, "__OriginalMethodPrefix_");
-	MSHookMessage(_$SBIcon, @selector(closeBoxClicked:), (IMP) &__$CyDelete_closeBoxClicked, "__OriginalMethodPrefix_");
+	MSHookMessage(_$SBIcon, @selector(allowsCloseBox), (IMP) &__$CyDelete_allowsCloseBox, "__CD_");
+	MSHookMessage(_$SBIcon, @selector(closeBoxClicked:), (IMP) &__$CyDelete_closeBoxClicked, "__CD_");
 
 	[pool release];
 }

@@ -15,8 +15,8 @@
 
 @protocol CyDelete
 
-- (BOOL)__OriginalMethodPrefix_allowsCloseBox;
-- (void)__OriginalMethodPrefix_closeBoxClicked:(id)fp8;
+- (BOOL)__CD_allowsCloseBox;
+- (void)__CD_closeBoxClicked:(id)fp8;
 @end
 
 NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd);
