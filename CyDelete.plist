@@ -47,7 +47,7 @@ LocalizedStrings = {
 		PACKAGE_NOT_CYDIA_TITLE = "Wurde nicht durch Cydia installiert";
 		PACKAGE_NOT_CYDIA_BODY = "„%@“ ist nicht durch Cydia installiert worden.";
 
-		PACKAGE_DELETE_BODY = "Das löschen von „%@“ wird „%@“ deinstallieren.";
+		PACKAGE_DELETE_BODY = "Durch das löschen von „%@“ wird das paket „%@“ deinstalliert.";
 
 		PACKAGE_UNINSTALL_ERROR_TITLE = "Fehler beim Deinstallieren";
 		PACKAGE_UNINSTALL_ERROR_BODY = "Es trat ein Fehler beim deinstallieren von „%@“ auf.";
