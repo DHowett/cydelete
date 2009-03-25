@@ -1,8 +1,0 @@
-#!/bin/bash
-declare -a cydia
-cydia=($CYDIA)
-if [[ ${CYDIA+@} ]]; then
-	eval "echo 'finish:restart' >&${cydia[0]}"
-fi
-chown root.admin /usr/libexec/cydelete/setuid
-chmod 6755 /usr/libexec/cydelete/setuid
