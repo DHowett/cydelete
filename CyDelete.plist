@@ -60,7 +60,7 @@ LocalizedStrings = {
 		PACKAGE_FINISH_RELOAD = "SpringBoard neu laden";
 		PACKAGE_FINISH_REBOOT = "Gerät neu starten";
 	};
-	empty = {
+	da = {
 		PACKAGE_SEARCHING = "Arbejder... ";
 		PACKAGE_UNINSTALLING = "Fjerner...";
 
