@@ -1,6 +1,9 @@
 Compiler=/opt/iphone-sdk/bin/arm-apple-darwin9-g++
 IP=root@ipod
 
+BUNDLEDIR=/Library/MobileSubstrate/DynamicLibraries
+BUNDLENAME=CyDelete.bundle
+
 LDFLAGS=	-lobjc \
 		-framework Foundation \
 		-framework UIKit \
@@ -14,14 +17,13 @@ LDFLAGS=	-lobjc \
 		-lobjc \
 		-ObjC++ \
 		-fobjc-exceptions \
-		-fobjc-call-cxx-cdtors
+		-fobjc-call-cxx-cdtors #-ggdb
 
-CFLAGS= -dynamiclib
+CFLAGS= -dynamiclib -DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\""#-ggdb
 
 Objects= Hook.o
 
 Target=CyDelete.dylib
-
 all: CyDelete.dylib setuid
 
 setuid:
@@ -33,8 +35,8 @@ $(Target):	$(Objects)
 		CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
 install: $(Target) setuid
-		scp cydelete-beta.deb $(IP):
-		ssh $(IP) dpkg -i cydelete-beta.deb
+		scp cydelete_$(shell grep Version DEBIAN/control | cut -d' ' -f2).deb $(IP):
+		ssh $(IP) dpkg -i cydelete_$(shell grep Version DEBIAN/control | cut -d' ' -f2).deb
 		ssh $(IP) killall -HUP SpringBoard
 
 %.o:	%.mm
@@ -46,11 +48,13 @@ clean:
 package: $(Target) setuid
 	rm -rf _
 	mkdir -p _/Library/MobileSubstrate/DynamicLibraries
+	mkdir -p _$(BUNDLEDIR)
 	mkdir -p _/usr/libexec/cydelete
 	cp $(Target) _/Library/MobileSubstrate/DynamicLibraries
 	cp CyDelete.plist _/Library/MobileSubstrate/DynamicLibraries
 	cp scripts/* _/usr/libexec/cydelete
 	cp setuid _/usr/libexec/cydelete
+	svn export ./$(BUNDLENAME) _$(BUNDLEDIR)/$(BUNDLENAME)
 	svn export ./DEBIAN _/DEBIAN
 	chown 0.80 _ -R
 	chmod 6755 _/usr/libexec/cydelete/setuid

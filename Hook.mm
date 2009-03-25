@@ -4,12 +4,14 @@
 
 static NSDictionary *translationDict = nil;
 static NSDictionary *enDict = nil;
+static NSBundle *cyDelBundle = nil;
 
 static NSString *SBLocalizedString(NSString *key) {
 	return [[NSBundle mainBundle] localizedStringForKey:key value:@"None" table:@"SpringBoard"];
 }
 
 static void initTranslation() {
+/*
 	if(!translationDict) {
 		NSBundle *msBundle = [NSBundle bundleForClass:[CyDelete class]];
 		NSDictionary *msDict = [NSDictionary dictionaryWithContentsOfFile:[[msBundle bundlePath]
@@ -24,10 +26,13 @@ static void initTranslation() {
 		else
 			[translationDict retain];
 	}
+*/
+	cyDelBundle = [[NSBundle bundleWithPath:BUNDLE] retain];
 }
 
 static NSString *CDLocalizedString(NSString *key) {
-	NSString *natlang = [translationDict objectForKey:key];
+/*
+NSString *natlang = [translationDict objectForKey:key];
 	NSString *eng = [enDict objectForKey:key];
 	if(!natlang) {
 		if(eng)
@@ -36,6 +41,8 @@ static NSString *CDLocalizedString(NSString *key) {
 			return key;
 	} else
 		return natlang;
+		*/
+	return [cyDelBundle localizedStringForKey:key value:key table:nil];
 }
 
 @implementation CyDelete
