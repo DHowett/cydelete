@@ -139,9 +139,17 @@
 		[delView release];
 		[body release];
 	} else {
+		/* Remove the Application from the ApplicationController */
+		Class $SBApplicationController = objc_getClass("SBApplicationController");
+		SBApplicationController *sharedSBApplicationController = [$SBApplicationController sharedInstance];
+		id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
+		[sharedSBApplicationController removeApplicationsFromModelWithBundleIdentifier:[[app bundle] bundleIdentifier]];
+
+		/* Uninstall the icon with the cool "winking out of existence" animation! */
 		Class $SBIconController = objc_getClass("SBIconController");
 		id sharedSBIconController = [$SBIconController sharedInstance];
 		[sharedSBIconController uninstallIcon:_SBIcon animate:YES];
+
 		if([body length] > 0) {
 			_finish = [CyDelete getFinish:body];
 			if(_finish != NSNotFound && _finish > 1) {
