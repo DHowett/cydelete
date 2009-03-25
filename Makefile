@@ -48,6 +48,7 @@ package: $(Target) setuid
 	mkdir -p _/Library/MobileSubstrate/DynamicLibraries
 	mkdir -p _/usr/libexec/cydelete
 	cp $(Target) _/Library/MobileSubstrate/DynamicLibraries
+	cp CyDelete.plist _/Library/MobileSubstrate/DynamicLibraries
 	cp scripts/* _/usr/libexec/cydelete
 	cp setuid _/usr/libexec/cydelete
 	chmod 6755 _/usr/libexec/cydelete/setuid

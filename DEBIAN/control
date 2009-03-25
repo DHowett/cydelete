@@ -1,8 +1,12 @@
 Package: net.howett.cydelete
 Name: CyDelete
-Version: 0.0.0-1
+Version: 1.0.0
 Architecture: iphoneos-arm
 Description: Delete Cydia packages from SpringBoard, just like App Store applications!
 Maintainer: Dustin Howett <dustin@howett.net>
 Author: Dustin Howett <dustin@howett.net>
 Section: Tweaks
+Depiction: http://moreinfo.thebigboss.org/moreinfo/cydeleteDp.php
+Homepage: http://moreinfo.thebigboss.org/moreinfo/cydelete.php
+dev: dustinhowett
+Sponsor: thebigboss.org <http://thebigboss.org>

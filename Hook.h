@@ -1,11 +1,12 @@
 #import <UIKit/UIKit.h>
-#import <UIKit/UIWindow.h>
-#import <UIKit/UIInterface.h>
-#import <UIKit/UIAlert.h>
-#import <UIKit/UIScreen.h>
-#import <UIKit/UIProgressHUD.h>
-#import <UIKit/UIActivityIndicatorView.h>
+//#import <UIKit/UIWindow.h>
+//#import <UIKit/UIInterface.h>
+//#import <UIKit/UIAlert.h>
+//#import <UIKit/UIScreen.h>
+//#import <UIKit/UIProgressHUD.h>
+//#import <UIKit/UIActivityIndicatorView.h>
 #import <Foundation/Foundation.h>
+#import "SpringBoard/SpringBoard.h"
 #import "SpringBoard/SBIcon.h"
 #import "SpringBoard/SBIconController.h"
 #import "SpringBoard/SBApplicationController.h"
@@ -24,7 +25,7 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon);
 static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8);
 extern "C" void CyDeleteInitialize();
 
-@interface CyDelete : NSObject<UIAlertViewDelegate> {
+@interface CyDelete : NSObject {
 	SBIcon *_SBIcon;
 	NSString *_pkgName;
 	NSString *_path;

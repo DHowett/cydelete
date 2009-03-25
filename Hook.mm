@@ -48,7 +48,7 @@
 	_finish = -1;
 	_SBIcon = [icon retain];
 	_path = [path retain];
-	_win = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+	_win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	_hud = [[UIProgressHUD alloc] initWithWindow:_win];
 	return self;
 }
@@ -101,6 +101,8 @@
 			context:@"askDelete"]
 		autorelease];
 	[delSheet setNumberOfRows:1];
+	[delSheet setDestructiveButtonIndex:1];
+	[delSheet setCancelButtonIndex:2];
 	[delSheet setBodyText:body];
 	[delSheet popupAlertAnimated:YES];
 }
@@ -165,6 +167,8 @@
 }
 
 - (void)finishUninstall {
+	//Class $SpringBoard = objc_getClass("SpringBoard");
+	//SpringBoard *sharedSB = [$SpringBoard sharedInstance];
 	switch(_finish) {
 		default:
 		case 0:
@@ -174,9 +178,11 @@
 			system("/usr/libexec/cydelete/setuid /bin/launchctl stop com.apple.SpringBoard");
 			break;
 		case 3:
+			//[sharedSB relaunchSpringBoard];
 			system("/usr/libexec/cydelete/setuid /bin/launchctl unload "SpringBoard_"; /usr/libexec/cydelete/setuid /bin/launchctl load "SpringBoard_);
 			break;
 		case 4:
+			//[sharedSB reboot];
 			system("/usr/libexec/cydelete/setuid /sbin/reboot");
 			break;
 	}
@@ -235,7 +241,7 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 
 	if([path isEqualToString:@"/Applications/Web.app"] ||
 		   [path hasPrefix:@"/private/var/mobile"] ||
-		   [path hasPrefix:@"/var/mobile"]) {
+		   [path hasPrefix:@"/var/mobile"] || path == NULL) {
 		[_SBIcon __CD_closeBoxClicked:fp8];
 		return;
 	}
