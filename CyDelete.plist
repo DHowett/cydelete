@@ -1,1 +1,63 @@
 Filter = {Bundles = ("com.apple.springboard");};
+LocalizedStrings = {
+	empty = {
+		PACKAGE_SEARCHING = "";
+		PACKAGE_UNINSTALLING = "";
+
+		PACKAGE_NOT_CYDIA_TITLE = "";
+		PACKAGE_NOT_CYDIA_BODY = "";
+
+		PACKAGE_DELETE_BODY = "";
+
+		PACKAGE_UNINSTALL_ERROR_TITLE = "";
+		PACKAGE_UNINSTALL_ERROR_BODY = "";
+
+		PACKAGE_FINISH_TITLE = "";
+		PACKAGE_FINISH_BODY = "";
+
+		PACKAGE_FINISH_OKAY = "";
+		PACKAGE_FINISH_RESTART = "";
+		PACKAGE_FINISH_RELOAD = "";
+		PACKAGE_FINISH_REBOOT = "";
+	};
+	en = {
+		PACKAGE_SEARCHING = "Processing...";
+		PACKAGE_UNINSTALLING = "Uninstalling...";
+
+		PACKAGE_NOT_CYDIA_TITLE = "Not Installed by Cydia";
+		PACKAGE_NOT_CYDIA_BODY = "\"%@\" was not installed by Cydia. You should not see this message, unless you installed this application yourself, in which case, I cannot remove it for you.";
+
+		PACKAGE_DELETE_BODY = "Deleting \"%@\" will unintall \"%@\".";
+
+		PACKAGE_UNINSTALL_ERROR_TITLE = "Error Uninstalling";
+		PACKAGE_UNINSTALL_ERROR_BODY = "\"%@\" failed to uninstall.";
+
+		PACKAGE_FINISH_TITLE = "Action Required";
+		PACKAGE_FINISH_BODY = "To complete the uninstall of \"%@\", you must %@.";
+
+		PACKAGE_FINISH_OKAY = "OK";
+		PACKAGE_FINISH_RESTART = "Restart SpringBoard";
+		PACKAGE_FINISH_RELOAD = "Reload SpringBoard";
+		PACKAGE_FINISH_REBOOT = "Reboot";
+	};
+	de = {
+		PACKAGE_SEARCHING = "Bearbeite...";
+		PACKAGE_UNINSTALLING = "Deinstalliere...";
+
+		PACKAGE_NOT_CYDIA_TITLE = "Wurde nicht durch Cydia installiert";
+		PACKAGE_NOT_CYDIA_BODY = "„%@“ ist nicht durch Cydia installiert worden.";
+
+		PACKAGE_DELETE_BODY = "Das löschen von „%@“ wird „%@“ Deinstallieren.";
+
+		PACKAGE_UNINSTALL_ERROR_TITLE = "Fehler beim Deinstallieren";
+		PACKAGE_UNINSTALL_ERROR_BODY = "Es trat ein Fehler beim Deinstallieren von „%@“ auf.";
+
+		PACKAGE_FINISH_TITLE = "";
+		PACKAGE_FINISH_BODY = "Um „%@“ zu deinstallieren müssen sie das %@.";
+
+		PACKAGE_FINISH_OKAY = "OK";
+		PACKAGE_FINISH_RESTART = "Restarte Springboard";
+		PACKAGE_FINISH_RELOAD = "Springboard neu laden";
+		PACKAGE_FINISH_REBOOT = "Gerät neu starten";
+	};
+};
