@@ -25,15 +25,15 @@ LocalizedStrings = {
 		PACKAGE_UNINSTALLING = "Uninstalling...";
 
 		PACKAGE_NOT_CYDIA_TITLE = "Not Installed by Cydia";
-		PACKAGE_NOT_CYDIA_BODY = "\"%@\" was not installed by Cydia. You should not see this message, unless you installed this application yourself, in which case, I cannot remove it for you.";
+		PACKAGE_NOT_CYDIA_BODY = "“%@” was not installed by Cydia. You should not see this message, unless you installed this application yourself, in which case, I cannot remove it for you.";
 
-		PACKAGE_DELETE_BODY = "Deleting \"%@\" will unintall \"%@\".";
+		PACKAGE_DELETE_BODY = "Deleting “%@” will unintall “%@”.";
 
 		PACKAGE_UNINSTALL_ERROR_TITLE = "Error Uninstalling";
-		PACKAGE_UNINSTALL_ERROR_BODY = "\"%@\" failed to uninstall.";
+		PACKAGE_UNINSTALL_ERROR_BODY = "“%@” failed to uninstall.";
 
 		PACKAGE_FINISH_TITLE = "Action Required";
-		PACKAGE_FINISH_BODY = "To complete the uninstall of \"%@\", you must %@.";
+		PACKAGE_FINISH_BODY = "To complete the uninstall of “%@”, you must %@.";
 
 		PACKAGE_FINISH_OKAY = "OK";
 		PACKAGE_FINISH_RESTART = "Restart SpringBoard";
@@ -47,17 +47,37 @@ LocalizedStrings = {
 		PACKAGE_NOT_CYDIA_TITLE = "Wurde nicht durch Cydia installiert";
 		PACKAGE_NOT_CYDIA_BODY = "„%@“ ist nicht durch Cydia installiert worden.";
 
-		PACKAGE_DELETE_BODY = "Das löschen von „%@“ wird „%@“ Deinstallieren.";
+		PACKAGE_DELETE_BODY = "Das löschen von „%@“ wird „%@“ deinstallieren.";
 
 		PACKAGE_UNINSTALL_ERROR_TITLE = "Fehler beim Deinstallieren";
-		PACKAGE_UNINSTALL_ERROR_BODY = "Es trat ein Fehler beim Deinstallieren von „%@“ auf.";
+		PACKAGE_UNINSTALL_ERROR_BODY = "Es trat ein Fehler beim deinstallieren von „%@“ auf.";
 
 		PACKAGE_FINISH_TITLE = "";
 		PACKAGE_FINISH_BODY = "Um „%@“ zu deinstallieren müssen sie das %@.";
 
 		PACKAGE_FINISH_OKAY = "OK";
-		PACKAGE_FINISH_RESTART = "Restarte Springboard";
-		PACKAGE_FINISH_RELOAD = "Springboard neu laden";
+		PACKAGE_FINISH_RESTART = "SpringBoard neu laden";
+		PACKAGE_FINISH_RELOAD = "SpringBoard neu laden";
 		PACKAGE_FINISH_REBOOT = "Gerät neu starten";
+	};
+	empty = {
+		PACKAGE_SEARCHING = "Arbejder... ";
+		PACKAGE_UNINSTALLING = "Fjerner...";
+
+		PACKAGE_NOT_CYDIA_TITLE = "Ikke installeded af Cydia";
+		PACKAGE_NOT_CYDIA_BODY = "“%@” Er ikke installeret fra Cydia. Du burde ikke se denne meddelse medmindre du selv har installeret programmet i såfaldt kan jeg ikke slette det for dig.";
+
+		PACKAGE_DELETE_BODY = "Sletning af “%@” vil afinstaller “%@” ";
+
+		PACKAGE_UNINSTALL_ERROR_TITLE = "Fejl under Afinstallation";
+		PACKAGE_UNINSTALL_ERROR_BODY = "Afinstallation af “%@” mislykkes.";
+
+		PACKAGE_FINISH_TITLE = "";
+		PACKAGE_FINISH_BODY = "For at fuldføre afinstallationen af “%@” skal du %@.";
+
+		PACKAGE_FINISH_OKAY = "OK";
+		PACKAGE_FINISH_RESTART = "Genstart SpringBoard";
+		PACKAGE_FINISH_RELOAD = "Indlæs SpringBoard";
+		PACKAGE_FINISH_REBOOT = "Genstart";
 	};
 };
