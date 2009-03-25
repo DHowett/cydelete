@@ -2,8 +2,6 @@
 
 #define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
 
-static NSDictionary *translationDict = nil;
-static NSDictionary *enDict = nil;
 static NSBundle *cyDelBundle = nil;
 
 static NSString *SBLocalizedString(NSString *key) {
@@ -11,37 +9,10 @@ static NSString *SBLocalizedString(NSString *key) {
 }
 
 static void initTranslation() {
-/*
-	if(!translationDict) {
-		NSBundle *msBundle = [NSBundle bundleForClass:[CyDelete class]];
-		NSDictionary *msDict = [NSDictionary dictionaryWithContentsOfFile:[[msBundle bundlePath]
-					stringByAppendingString:@"/CyDelete.plist"]];
-		NSArray *languages = [NSBundle preferredLocalizationsFromArray:[[msDict objectForKey:@"LocalizedStrings"] allKeys]];
-		NSString *preferredLang = [languages objectAtIndex:0];
-		enDict = [[msDict objectForKey:@"LocalizedStrings"] objectForKey:@"en"];
-		translationDict = [[msDict objectForKey:@"LocalizedStrings"] objectForKey:preferredLang];
-		[enDict retain];
-		if(!translationDict)
-			translationDict = enDict;
-		else
-			[translationDict retain];
-	}
-*/
 	cyDelBundle = [[NSBundle bundleWithPath:BUNDLE] retain];
 }
 
-static NSString *CDLocalizedString(NSString *key) {
-/*
-NSString *natlang = [translationDict objectForKey:key];
-	NSString *eng = [enDict objectForKey:key];
-	if(!natlang) {
-		if(eng)
-			return eng;
-		else
-			return key;
-	} else
-		return natlang;
-		*/
+static inline NSString *CDLocalizedString(NSString *key) {
 	return [cyDelBundle localizedStringForKey:key value:key table:nil];
 }
 
