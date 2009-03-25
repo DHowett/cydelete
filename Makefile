@@ -51,7 +51,7 @@ package: $(Target) setuid
 	cp CyDelete.plist _/Library/MobileSubstrate/DynamicLibraries
 	cp scripts/* _/usr/libexec/cydelete
 	cp setuid _/usr/libexec/cydelete
-	#chmod 6755 _/usr/libexec/cydelete/setuid
+	chmod 6755 _/usr/libexec/cydelete/setuid
 	svn export ./DEBIAN _/DEBIAN
 	dpkg-deb -b _ cydelete-beta.deb
 
