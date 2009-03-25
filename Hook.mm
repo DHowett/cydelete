@@ -162,7 +162,6 @@
 				[self notifyFinish];
 			}
 		}
-		[body release];
 	}
 
 	[self autorelease];
