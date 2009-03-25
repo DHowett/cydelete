@@ -73,7 +73,7 @@ static NSString *CDLocalizedString(NSString *key) {
 		case 2:
 			return CDLocalizedString(@"PACKAGE_FINISH_RESTART");
 		case 3:
-			return CDLocalizedString(@"PACKAGE_FINISH_RELOAD");
+			//return CDLocalizedString(@"PACKAGE_FINISH_RELOAD");
 		case 4:
 			return CDLocalizedString(@"PACKAGE_FINISH_REBOOT");
 	}
@@ -233,8 +233,8 @@ static NSString *CDLocalizedString(NSString *key) {
 			break;
 		case 3:
 			//[sharedSB relaunchSpringBoard];
-			system("/usr/libexec/cydelete/setuid /bin/launchctl unload "SpringBoard_"; /usr/libexec/cydelete/setuid /bin/launchctl load "SpringBoard_);
-			break;
+			//system("/usr/libexec/cydelete/setuid /bin/launchctl unload "SpringBoard_"; /usr/libexec/cydelete/setuid /bin/launchctl load "SpringBoard_);
+			//break;
 		case 4:
 			//[sharedSB reboot];
 			system("/usr/libexec/cydelete/setuid /sbin/reboot");
