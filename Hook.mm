@@ -2,28 +2,40 @@
 
 #define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
 
+static NSDictionary *translationDict = nil;
+static NSDictionary *enDict = nil;
+
 static NSString *SBLocalizedString(NSString *key) {
 	return [[NSBundle mainBundle] localizedStringForKey:key value:@"None" table:@"SpringBoard"];
 }
 
-static NSString *CDLocalizedString(NSString *key) {
-	//return [[NSBundle bundleForClass:[CyDelete class]] localizedStringForKey:key value:@"None" table:@"CyDelete"];
-	static NSDictionary *translationDict = nil;
-	static NSString *preferredLang = nil;
+static void initTranslation() {
 	if(!translationDict) {
 		NSBundle *msBundle = [NSBundle bundleForClass:[CyDelete class]];
 		NSDictionary *msDict = [NSDictionary dictionaryWithContentsOfFile:[[msBundle bundlePath]
 					stringByAppendingString:@"/CyDelete.plist"]];
-//		NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-//		NSArray *languages = [defs objectForKey:@"AppleLanguages"];
 		NSArray *languages = [NSBundle preferredLocalizationsFromArray:[[msDict objectForKey:@"LocalizedStrings"] allKeys]];
-		preferredLang = [languages objectAtIndex:0];
+		NSString *preferredLang = [languages objectAtIndex:0];
+		enDict = [[msDict objectForKey:@"LocalizedStrings"] objectForKey:@"en"];
 		translationDict = [[msDict objectForKey:@"LocalizedStrings"] objectForKey:preferredLang];
+		[enDict retain];
 		if(!translationDict)
-			translationDict = [[msDict objectForKey:@"LocalizedStrings"] objectForKey:@"en"];
+			translationDict = enDict;
+		else
+			[translationDict retain];
 	}
-	if(!translationDict) return key;
-	return [translationDict objectForKey:key];
+}
+
+static NSString *CDLocalizedString(NSString *key) {
+	NSString *natlang = [translationDict objectForKey:key];
+	NSString *eng = [enDict objectForKey:key];
+	if(!natlang) {
+		if(eng)
+			return eng;
+		else
+			return key;
+	} else
+		return natlang;
 }
 
 @implementation CyDelete
@@ -57,13 +69,13 @@ static NSString *CDLocalizedString(NSString *key) {
 		default:
 		case 0:
 		case 1:
-			return @"Okay";
+			return CDLocalizedString(@"PACKAGE_FINISH_OKAY");
 		case 2:
-			return @"Restart SpringBoard";
+			return CDLocalizedString(@"PACKAGE_FINISH_RESTART");
 		case 3:
-			return @"Reload SpringBoard";
+			return CDLocalizedString(@"PACKAGE_FINISH_RELOAD");
 		case 4:
-			return @"Reboot";
+			return CDLocalizedString(@"PACKAGE_FINISH_REBOOT");
 	}
 }
 
@@ -99,8 +111,8 @@ static NSString *CDLocalizedString(NSString *key) {
 
 - (void)closeBoxClicked_finish {
 	if(!_pkgName) {
-		NSString *body = [[NSString alloc] initWithFormat:@"%@ was not installed by Cydia. You should not see this message, unless you installed this application yourself, in which case, I cannot remove it for you.", [_SBIcon displayName]];
-		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:@"Not Installed by Cydia"
+		NSString *body = [[NSString alloc] initWithFormat:CDLocalizedString(@"PACKAGE_NOT_CYDIA_BODY"), [_SBIcon displayName]];
+		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:CDLocalizedString(@"PACKAGE_NOT_CYDIA_TITLE")
 								message:body
 								delegate:nil
 								cancelButtonTitle:@"OK"
@@ -120,7 +132,7 @@ static NSString *CDLocalizedString(NSString *key) {
 // The [self retain] here does NOT seem right.
 - (void)askDelete {
 	NSString *title = [NSString stringWithFormat:SBLocalizedString(@"UNINSTALL_ICON_TITLE"), [_SBIcon displayName]];
-	NSString *body = [NSString stringWithFormat:@"Deleting \"%@\" will uninstall \"%@\"", [_SBIcon displayName], _pkgName];
+	NSString *body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_DELETE_BODY"), [_SBIcon displayName], _pkgName];
 	id delSheet = [[[UIActionSheet alloc]
 			initWithTitle:title
 			buttons:[NSArray arrayWithObjects:SBLocalizedString(@"UNINSTALL_ICON_CONFIRM"), SBLocalizedString(@"UNINSTALL_ICON_CANCEL"), nil]
@@ -148,7 +160,7 @@ static NSString *CDLocalizedString(NSString *key) {
 }
 
 - (void)_uninstall {
-	[self startHUD:@"Uninstalling..."];
+	[self startHUD:CDLocalizedString(@"PACKAGE_UNINSTALLING")];
 	[NSThread detachNewThreadSelector:@selector(uninstall_thread:) toTarget:self withObject:[NSThread currentThread]];
 }
 
@@ -163,8 +175,8 @@ static NSString *CDLocalizedString(NSString *key) {
 
 - (void)uninstalled:(NSString *)body {
 	if(!body) {
-		body = [[NSString alloc] initWithFormat:@"%@ failed uninstall.", _pkgName];
-		UIAlertView *delView = [[UIAlertView alloc] initWithTitle:@"Error Uninstalling" message:body delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
+		body = [[NSString alloc] initWithFormat:CDLocalizedString(@"PACKAGE_UNINSTALL_ERROR_BODY"), _pkgName];
+		UIAlertView *delView = [[UIAlertView alloc] initWithTitle:CDLocalizedString(@"PACKAGE_UNINSTALL_ERROR_TITLE") message:body delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
 		[delView show];
 		[delView release];
 		[body release];
@@ -188,13 +200,17 @@ static NSString *CDLocalizedString(NSString *key) {
 		}
 	}
 
+	//if(translationDict != enDict) [translationDict release];
+	//[enDict release];
+	//translationDict = nil;
+	//enDict = nil;
 	[self autorelease];
 }
 
 - (void)notifyFinish {
-	NSString *body = [NSString stringWithFormat:@"To complete the uninstall of %@, you must %@.", [_SBIcon displayName], [CyDelete getFinishString:_finish]];
+	NSString *body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_FINISH_BODY"), [_SBIcon displayName], [CyDelete getFinishString:_finish]];
 	id finishSheet = [[[UIActionSheet alloc]
-			initWithTitle:@"Action Required"
+			initWithTitle:CDLocalizedString(@"PACKAGE_FINISH_TITLE")
 			buttons:[NSArray arrayWithObjects:[CyDelete getFinishString:_finish], nil]
 			defaultButtonIndex:1
 			delegate:self
@@ -295,6 +311,7 @@ extern "C" void CyDeleteInitialize() {
 	Class _$SBIcon = objc_getClass("SBIcon");
 	MSHookMessage(_$SBIcon, @selector(allowsCloseBox), (IMP) &__$CyDelete_allowsCloseBox, "__CD_");
 	MSHookMessage(_$SBIcon, @selector(closeBoxClicked:), (IMP) &__$CyDelete_closeBoxClicked, "__CD_");
+	initTranslation();
 
 	[pool release];
 }
