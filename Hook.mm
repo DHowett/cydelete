@@ -2,6 +2,10 @@
 
 #define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
 
+static NSString *SBLocalizedString(NSString *key) {
+	return [[NSBundle mainBundle] localizedStringForKey:key value:@"None" table:@"SpringBoard"];
+}
+
 @implementation CyDelete
 
 - (void)startHUD:(id)message {
@@ -95,11 +99,11 @@
 
 // The [self retain] here does NOT seem right.
 - (void)askDelete {
-	NSString *title = [NSString stringWithFormat:@"Delete \"%@\"", [_SBIcon displayName]];
+	NSString *title = [NSString stringWithFormat:SBLocalizedString(@"UNINSTALL_ICON_TITLE"), [_SBIcon displayName]];
 	NSString *body = [NSString stringWithFormat:@"Deleting \"%@\" will uninstall \"%@\"", [_SBIcon displayName], _pkgName];
 	id delSheet = [[[UIActionSheet alloc]
 			initWithTitle:title
-			buttons:[NSArray arrayWithObjects:@"Delete", @"Cancel", nil]
+			buttons:[NSArray arrayWithObjects:SBLocalizedString(@"UNINSTALL_ICON_CONFIRM"), SBLocalizedString(@"UNINSTALL_ICON_CANCEL"), nil]
 			defaultButtonIndex:2
 			delegate:[self retain]
 			context:@"askDelete"]
