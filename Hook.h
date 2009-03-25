@@ -26,6 +26,7 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8);
 extern "C" void CyDeleteInitialize();
 
 @interface CyDelete : NSObject {
+	NSAutoreleasePool *_pool;
 	SBIcon *_SBIcon;
 	NSString *_pkgName;
 	NSString *_path;
@@ -40,7 +41,7 @@ extern "C" void CyDeleteInitialize();
 - (id)initWithIcon:(SBIcon *)icon path:(NSString *)path;
 - (void)_closeBoxClicked;
 - (void)closeBoxClicked_thread:(id)callingThread;
-- (void)closeBoxClicked_finish:(id)dpkgOutput;
+- (void)closeBoxClicked_finish;
 - (void)askDelete;
 - (void)alertSheet:(UIActionSheet *)alertSheet buttonClicked:(NSInteger)buttonIndex;
 - (void)_uninstall;

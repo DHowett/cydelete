@@ -59,6 +59,7 @@
 }
 
 - (void)closeBoxClicked_thread:(id)callingThread {
+	id pool = [[NSAutoreleasePool alloc] init];
 	Class $SBApplicationController = objc_getClass("SBApplicationController");
 	id sharedSBApplicationController = [$SBApplicationController sharedInstance];
 	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
@@ -67,11 +68,13 @@
 	NSString *dpkgCmd = [NSString stringWithFormat:@"/usr/libexec/cydelete/owner.sh \"%@\" \"%@\" \"%@/Info.plist\"", bundle, title, _path];
 	NSMutableString *dpkgOutput =  __CyDelete_outputForShellCommand(dpkgCmd);
 	[self killHUD];
-	[self performSelector:@selector(closeBoxClicked_finish:) onThread:callingThread withObject:dpkgOutput waitUntilDone:NO];
+	_pkgName = [dpkgOutput copy];
+	[self performSelector:@selector(closeBoxClicked_finish) onThread:callingThread withObject:nil waitUntilDone:YES];
+	[pool drain];
 }
 
-- (void)closeBoxClicked_finish:(id)dpkgOutput {
-	if(!dpkgOutput) {
+- (void)closeBoxClicked_finish {
+	if(!_pkgName) {
 		NSString *body = [[NSString alloc] initWithFormat:@"%@ was not installed by Cydia. You should not see this message, unless you installed this application yourself, in which case, I cannot remove it for you.", [_SBIcon displayName]];
 		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:@"Not Installed by Cydia"
 								message:body
@@ -83,7 +86,8 @@
 		[alertUnknown release];
 		return;
 	} else {
-		_pkgName = [dpkgOutput copy];
+		//_pkgName = [dpkgOutput copy];
+		//[dpkgOutput release];
 		[self askDelete];
 		return;
 	}
@@ -125,10 +129,12 @@
 }
 
 - (void)uninstall_thread:(NSThread *)callingThread {
+	id pool = [[NSAutoreleasePool alloc] init];
 	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_.sh %@", _pkgName];
 	NSString *body = __CyDelete_outputForShellCommand(command);
 	[self killHUD];
-	[self performSelector:@selector(uninstalled:) onThread:callingThread withObject:body waitUntilDone:NO];
+	[self performSelector:@selector(uninstalled:) onThread:callingThread withObject:body waitUntilDone:YES];
+	[pool drain];
 }
 
 - (void)uninstalled:(NSString *)body {
@@ -156,6 +162,7 @@
 				[self notifyFinish];
 			}
 		}
+		[body release];
 	}
 
 	[self autorelease];
@@ -214,16 +221,18 @@ NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd) {
 	char buf[1024];
 	NSMutableString* finalRet;
 
+	NSLog(@"CD: Calling %@.", cmd);
 	fp = popen([cmd UTF8String], "r");
 	if (fp == NULL) {
 		return nil;
 	}
 
 	fgets(buf, 1024, fp);
+	NSLog(@"CD: received %s", buf);
 	finalRet = [NSString stringWithUTF8String:buf];
+	NSLog(@"CD: Turned into %@", finalRet);
 
 	if(pclose(fp) != 0) {
-		[finalRet release];
 		return nil;
 	}
 
@@ -241,7 +250,6 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
 }
 
 static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
-
 	NSString *path;
 	Class $SBApplicationController = objc_getClass("SBApplicationController");
 	id sharedSBApplicationController = [$SBApplicationController sharedInstance];
