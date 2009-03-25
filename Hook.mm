@@ -6,6 +6,26 @@ static NSString *SBLocalizedString(NSString *key) {
 	return [[NSBundle mainBundle] localizedStringForKey:key value:@"None" table:@"SpringBoard"];
 }
 
+static NSString *CDLocalizedString(NSString *key) {
+	//return [[NSBundle bundleForClass:[CyDelete class]] localizedStringForKey:key value:@"None" table:@"CyDelete"];
+	static NSDictionary *translationDict = nil;
+	static NSString *preferredLang = nil;
+	if(!translationDict) {
+		NSBundle *msBundle = [NSBundle bundleForClass:[CyDelete class]];
+		NSDictionary *msDict = [NSDictionary dictionaryWithContentsOfFile:[[msBundle bundlePath]
+					stringByAppendingString:@"/CyDelete.plist"]];
+//		NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+//		NSArray *languages = [defs objectForKey:@"AppleLanguages"];
+		NSArray *languages = [NSBundle preferredLocalizationsFromArray:[[msDict objectForKey:@"LocalizedStrings"] allKeys]];
+		preferredLang = [languages objectAtIndex:0];
+		translationDict = [[msDict objectForKey:@"LocalizedStrings"] objectForKey:preferredLang];
+		if(!translationDict)
+			translationDict = [[msDict objectForKey:@"LocalizedStrings"] objectForKey:@"en"];
+	}
+	if(!translationDict) return key;
+	return [translationDict objectForKey:key];
+}
+
 @implementation CyDelete
 
 - (void)startHUD:(id)message {
@@ -58,7 +78,7 @@ static NSString *SBLocalizedString(NSString *key) {
 }
 
 - (void)_closeBoxClicked {
-	[self startHUD:@"Looking Up Package..."];
+	[self startHUD:CDLocalizedString(@"PACKAGE_SEARCHING")];
 	[NSThread detachNewThreadSelector:@selector(closeBoxClicked_thread:) toTarget:self withObject:[NSThread currentThread]];
 }
 
