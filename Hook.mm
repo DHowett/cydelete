@@ -68,6 +68,12 @@ static inline NSString *CDLocalizedString(NSString *key) {
 }
 
 - (void)_closeBoxClicked {
+	if([[_SBIcon displayName] isEqualToString:@"Installer"]) {
+		// If we're dealing with Installer, short circuit over the package search. 
+		_cydiaManaged = false;
+		[self askDelete];
+		return;
+	}
 	[self startHUD:CDLocalizedString(@"PACKAGE_SEARCHING")];
 	[NSThread detachNewThreadSelector:@selector(closeBoxClicked_thread:) toTarget:self withObject:[NSThread currentThread]];
 }
@@ -88,7 +94,7 @@ static inline NSString *CDLocalizedString(NSString *key) {
 }
 
 - (void)closeBoxClicked_finish {
-	if(!_pkgName) {
+	if(!_pkgName && ![[_SBIcon displayName] isEqualToString:@"Installer"]) {
 		NSString *body = [[NSString alloc] initWithFormat:CDLocalizedString(@"PACKAGE_NOT_CYDIA_BODY"), [_SBIcon displayName]];
 		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:CDLocalizedString(@"PACKAGE_NOT_CYDIA_TITLE")
 								message:body
@@ -100,8 +106,7 @@ static inline NSString *CDLocalizedString(NSString *key) {
 		[alertUnknown release];
 		return;
 	} else {
-		//_pkgName = [dpkgOutput copy];
-		//[dpkgOutput release];
+		_cydiaManaged = true;
 		[self askDelete];
 		return;
 	}
@@ -110,7 +115,11 @@ static inline NSString *CDLocalizedString(NSString *key) {
 // The [self retain] here does NOT seem right.
 - (void)askDelete {
 	NSString *title = [NSString stringWithFormat:SBLocalizedString(@"UNINSTALL_ICON_TITLE"), [_SBIcon displayName]];
-	NSString *body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_DELETE_BODY"), [_SBIcon displayName], _pkgName];
+	NSString *body;
+	if(_cydiaManaged)
+		body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_DELETE_BODY"), [_SBIcon displayName], _pkgName];
+	else
+		body = [NSString stringWithFormat:SBLocalizedString(@"DELETE_WIDGET_BODY"), [_SBIcon displayName]];
 	id delSheet = [[[UIActionSheet alloc]
 			initWithTitle:title
 			buttons:[NSArray arrayWithObjects:SBLocalizedString(@"UNINSTALL_ICON_CONFIRM"), SBLocalizedString(@"UNINSTALL_ICON_CANCEL"), nil]
@@ -139,20 +148,34 @@ static inline NSString *CDLocalizedString(NSString *key) {
 
 - (void)_uninstall {
 	[self startHUD:CDLocalizedString(@"PACKAGE_UNINSTALLING")];
-	[NSThread detachNewThreadSelector:@selector(uninstall_thread:) toTarget:self withObject:[NSThread currentThread]];
+	[NSThread detachNewThreadSelector:(_cydiaManaged ? @selector(uninstall_thread_dpkg:) : @selector(uninstall_thread_nondpkg:))
+		  toTarget:self
+		  withObject:[NSThread currentThread]];
 }
 
-- (void)uninstall_thread:(NSThread *)callingThread {
+- (void)uninstall_thread_dpkg:(NSThread *)callingThread {
 	id pool = [[NSAutoreleasePool alloc] init];
-	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_.sh %@", _pkgName];
+	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_dpkg.sh %@", _pkgName];
 	NSString *body = __CyDelete_outputForShellCommand(command);
 	[self killHUD];
 	[self performSelector:@selector(uninstalled:) onThread:callingThread withObject:body waitUntilDone:YES];
 	[pool drain];
 }
 
+- (void)uninstall_thread_nondpkg:(NSThread *)callingThread {
+	id pool = [[NSAutoreleasePool alloc] init];
+	Class $SBApplicationController = objc_getClass("SBApplicationController");
+	SBApplicationController *sharedSBApplicationController = [$SBApplicationController sharedInstance];
+	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
+	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_nondpkg.sh %@", [app path]];
+	system([command UTF8String]);
+	[self killHUD];
+	[self performSelector:@selector(uninstalled:) onThread:callingThread withObject:nil waitUntilDone:YES];
+	[pool drain];
+}
+
 - (void)uninstalled:(NSString *)body {
-	if(!body) {
+	if(!body && _cydiaManaged) {
 		body = [[NSString alloc] initWithFormat:CDLocalizedString(@"PACKAGE_UNINSTALL_ERROR_BODY"), _pkgName];
 		UIAlertView *delView = [[UIAlertView alloc] initWithTitle:CDLocalizedString(@"PACKAGE_UNINSTALL_ERROR_TITLE") message:body delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
 		[delView show];
@@ -178,10 +201,6 @@ static inline NSString *CDLocalizedString(NSString *key) {
 		}
 	}
 
-	//if(translationDict != enDict) [translationDict release];
-	//[enDict release];
-	//translationDict = nil;
-	//enDict = nil;
 	[self autorelease];
 }
 

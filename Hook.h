@@ -33,6 +33,7 @@ extern "C" void CyDeleteInitialize();
 	UIProgressHUD *_hud;
 	UIWindow *_win;
 	NSInteger _finish;
+	bool _cydiaManaged;
 }
 - (void)startHUD:(id)message;
 - (void)killHUD;
@@ -45,7 +46,8 @@ extern "C" void CyDeleteInitialize();
 - (void)askDelete;
 - (void)alertSheet:(UIActionSheet *)alertSheet buttonClicked:(NSInteger)buttonIndex;
 - (void)_uninstall;
-- (void)uninstall_thread:(NSThread *)callingThread;
+- (void)uninstall_thread_dpkg:(NSThread *)callingThread;
+- (void)uninstall_thread_nondpkg:(NSThread *)callingThread;
 - (void)uninstalled:(NSString *)body;
 - (void)notifyFinish;
 - (void)finishUninstall;
