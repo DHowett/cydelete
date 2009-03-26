@@ -3,30 +3,30 @@
 <plist version="1.0">
 <dict>
 	<key>PACKAGE_DELETE_BODY</key>
-	<string>Deleting “%@” will unintall “%@”.</string>
+	<string>“%@”'i silmek bu programida “%@” ayrica siler.</string>
 	<key>PACKAGE_FINISH_BODY</key>
-	<string>To complete the uninstall of “%@”, you must %@.</string>
+	<string>Program “%@” butun olarak silmek icin, %@ yapmaniz lazim.</string>
 	<key>PACKAGE_FINISH_OKAY</key>
-	<string>OK</string>
+	<string>Tamam</string>
 	<key>PACKAGE_FINISH_REBOOT</key>
-	<string>Reboot</string>
+	<string>Yeniden Baslatiliyor</string>
 	<key>PACKAGE_FINISH_RELOAD</key>
-	<string>Reload SpringBoard</string>
+	<string>SpringBoard Yenileniyor</string>
 	<key>PACKAGE_FINISH_RESTART</key>
-	<string>Restart SpringBoard</string>
+	<string>SpringBoard Yeniden Baslatiliyor</string>
 	<key>PACKAGE_FINISH_TITLE</key>
-	<string>Action Required</string>
+	<string>Ilginiz Gerekiyor</string>
 	<key>PACKAGE_NOT_CYDIA_BODY</key>
-	<string>“%@” was not installed by Cydia, and cannot be removed by CyDelete.</string>
+	<string>“%@” Cydia tarafindan yuklenmemis, ve CyDelete tarafindan silinemiyor.</string>
 	<key>PACKAGE_NOT_CYDIA_TITLE</key>
-	<string>Not Installed by Cydia</string>
+	<string>Cydia tarafindan yuklenmemis.</string>
 	<key>PACKAGE_SEARCHING</key>
-	<string>Processing...</string>
+	<string>Islemde...</string>
 	<key>PACKAGE_UNINSTALLING</key>
-	<string>Uninstalling...</string>
+	<string>Siliniyor...</string>
 	<key>PACKAGE_UNINSTALL_ERROR_BODY</key>
-	<string>“%@” failed to uninstall.</string>
+	<string>“%@” silmede sorun cikardi.</string>
 	<key>PACKAGE_UNINSTALL_ERROR_TITLE</key>
-	<string>Error Uninstalling</string>
+	<string>Silme Hatasi</string>
 </dict>
 </plist>
