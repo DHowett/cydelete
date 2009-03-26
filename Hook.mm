@@ -68,7 +68,10 @@ static inline NSString *CDLocalizedString(NSString *key) {
 }
 
 - (void)_closeBoxClicked {
-	if([[_SBIcon displayName] isEqualToString:@"Installer"]) {
+	Class $SBApplicationController = objc_getClass("SBApplicationController");
+	id sharedSBApplicationController = [$SBApplicationController sharedInstance];
+	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
+	if([[[app bundle] bundleIdentifier] isEqualToString:@"com.ripdev.Installer"]) {
 		// If we're dealing with Installer, short circuit over the package search. 
 		_cydiaManaged = false;
 		[self askDelete];
