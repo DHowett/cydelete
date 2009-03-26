@@ -55,6 +55,7 @@ package: $(Target) setuid
 	cp scripts/* _/usr/libexec/cydelete
 	cp setuid _/usr/libexec/cydelete
 	svn export ./$(BUNDLENAME) _$(BUNDLEDIR)/$(BUNDLENAME)
+	rm _$(BUNDLEDIR)/$(BUNDLENAME)/convert.sh
 	svn export ./DEBIAN _/DEBIAN
 	chown 0.80 _ -R
 	chmod 6755 _/usr/libexec/cydelete/setuid
