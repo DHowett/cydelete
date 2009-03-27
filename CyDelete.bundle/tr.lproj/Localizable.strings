@@ -3,30 +3,30 @@
 <plist version="1.0">
 <dict>
 	<key>PACKAGE_DELETE_BODY</key>
-	<string>“%@”'i silmek bu programida “%@” ayrica siler.</string>
+	<string>“%@” öğesini silmek şu öğeyi silecek “%@” </string>
 	<key>PACKAGE_FINISH_BODY</key>
-	<string>Program “%@” butun olarak silmek icin, %@ yapmaniz lazim.</string>
+	<string>“%@” öğesinin silinmesini tamamlamak için, ''%@'' eylemini yapmalısınız.</string>
 	<key>PACKAGE_FINISH_OKAY</key>
 	<string>Tamam</string>
 	<key>PACKAGE_FINISH_REBOOT</key>
-	<string>Yeniden Baslatiliyor</string>
+	<string>Yeniden Başlat</string>
 	<key>PACKAGE_FINISH_RELOAD</key>
-	<string>SpringBoard Yenileniyor</string>
+	<string>Masaüstünü Yeniden Yükle</string>
 	<key>PACKAGE_FINISH_RESTART</key>
-	<string>SpringBoard Yeniden Baslatiliyor</string>
+	<string>Masaüstünü Yeniden Başlat</string>
 	<key>PACKAGE_FINISH_TITLE</key>
-	<string>Ilginiz Gerekiyor</string>
+	<string>Eylem Gerekli</string>
 	<key>PACKAGE_NOT_CYDIA_BODY</key>
-	<string>“%@” Cydia tarafindan yuklenmemis, ve CyDelete tarafindan silinemiyor.</string>
+	<string>“%@” öğesi Cydia'dan yüklenmemiş. Bu mesajı gördüyseniz bu öğeyi kendiniz yüklemişsiniz demektir ve böyle öğeler CyDelete ile silinemez.</string>
 	<key>PACKAGE_NOT_CYDIA_TITLE</key>
-	<string>Cydia tarafindan yuklenmemis.</string>
+	<string>Öğe Cydia'dan Yüklenmemiş</string>
 	<key>PACKAGE_SEARCHING</key>
-	<string>Islemde...</string>
+	<string>Öğe İnceleniyor...</string>
 	<key>PACKAGE_UNINSTALLING</key>
 	<string>Siliniyor...</string>
 	<key>PACKAGE_UNINSTALL_ERROR_BODY</key>
-	<string>“%@” silmede sorun cikardi.</string>
+	<string>“%@” öğesi silinemedi.</string>
 	<key>PACKAGE_UNINSTALL_ERROR_TITLE</key>
-	<string>Silme Hatasi</string>
+	<string>Silme Hatası</string>
 </dict>
 </plist>
