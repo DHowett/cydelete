@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>PACKAGE_DELETE_BODY</key>
-	<string>Deleting “%@” will unintall “%@”.</string>
+	<string>Deleting “%@” will uninstall “%@”.</string>
 	<key>PACKAGE_FINISH_BODY</key>
 	<string>To complete the uninstall of “%@”, you must %@.</string>
 	<key>PACKAGE_FINISH_OKAY</key>
