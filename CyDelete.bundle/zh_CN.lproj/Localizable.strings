@@ -5,27 +5,27 @@
 	<key>PACKAGE_DELETE_BODY</key>
 	<string>删除“%@”将会卸载“%@”。</string>
 	<key>PACKAGE_FINISH_BODY</key>
-	<string>为彻底卸载“%@”，您必须%@。</string>
+	<string>为完成“%@”的卸载，您必须%@。</string>
 	<key>PACKAGE_FINISH_OKAY</key>
 	<string>确定</string>
 	<key>PACKAGE_FINISH_REBOOT</key>
 	<string>重启</string>
 	<key>PACKAGE_FINISH_RELOAD</key>
-	<string>重新装载SpringBoard</string>
+	<string>重新加载SpringBoard</string>
 	<key>PACKAGE_FINISH_RESTART</key>
 	<string>重新启动SpringBoard</string>
 	<key>PACKAGE_FINISH_TITLE</key>
 	<string></string>
 	<key>PACKAGE_NOT_CYDIA_BODY</key>
-	<string>“%@”并非由Cydia安装。正常情况下您是不会见到此条信息的，除非是您自己安装的这个程序，在这种情况下，我不能为您卸载此程序。</string>
+	<string>“%@”并非在Cydia中安装，因此无法由CyDelete卸载。</string>
 	<key>PACKAGE_NOT_CYDIA_TITLE</key>
-	<string>不是由Cydia安装</string>
+	<string>并非在Cydia中安装</string>
 	<key>PACKAGE_SEARCHING</key>
 	<string>处理中…</string>
 	<key>PACKAGE_UNINSTALLING</key>
 	<string>卸载中…</string>
 	<key>PACKAGE_UNINSTALL_ERROR_BODY</key>
-	<string>“%@”卸载失败。</string>
+	<string>卸载“%@”失败</string>
 	<key>PACKAGE_UNINSTALL_ERROR_TITLE</key>
 	<string>卸载时发生错误</string>
 </dict>
