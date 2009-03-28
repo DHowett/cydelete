@@ -3,30 +3,30 @@
 <plist version="1.0">
 <dict>
 	<key>PACKAGE_DELETE_BODY</key>
-	<string>La suppression de “%@” désinstallera “%@”.</string>
+	<string>Supprimer “%@” le supprimera définitivement.</string>
 	<key>PACKAGE_FINISH_BODY</key>
-	<string>Pour finaliser la désinstallation “%@”, vous devez %@.</string>
+	<string>Pour finir la désinstallation de l'application “%@”, veuillez %@.</string>
 	<key>PACKAGE_FINISH_OKAY</key>
-	<string>OK</string>
+	<string>Fini</string>
 	<key>PACKAGE_FINISH_REBOOT</key>
-	<string>Redémarrer</string>
+	<string>Redémarrage</string>
 	<key>PACKAGE_FINISH_RELOAD</key>
-	<string>Relancer SpringBoard</string>
+	<string>Chargement du SpringBoard</string>
 	<key>PACKAGE_FINISH_RESTART</key>
-	<string>Redémarrer SpringBoard</string>
+	<string>Redémarrer le SpringBoard</string>
 	<key>PACKAGE_FINISH_TITLE</key>
-	<string>Attention Requise</string>
+	<string></string>
 	<key>PACKAGE_NOT_CYDIA_BODY</key>
-	<string>“%@” n'a pas été installé par Cydia. Vous ne devriez pas voir ce message à moins de l'avoir installé manuellement, dans ce cas, il ne pourra être supprimé.</string>
+	<string>L'application “%@” n'a pas été installée via Cydia et ne peut donc pas être supprimée par Cydelete.</string>
 	<key>PACKAGE_NOT_CYDIA_TITLE</key>
-	<string>Non installé par Cydia</string>
+	<string>Non installé avec Cydia</string>
 	<key>PACKAGE_SEARCHING</key>
-	<string>En cours...</string>
+	<string>Chargement...</string>
 	<key>PACKAGE_UNINSTALLING</key>
 	<string>Désinstallation...</string>
 	<key>PACKAGE_UNINSTALL_ERROR_BODY</key>
-	<string>“%@” echec de la désinstallation.</string>
+	<string>“%@” n'a pas été désinstallé.</string>
 	<key>PACKAGE_UNINSTALL_ERROR_TITLE</key>
-	<string>Erreur de désinstallation.</string>
+	<string>Erreur durant la désinstallation</string>
 </dict>
 </plist>
