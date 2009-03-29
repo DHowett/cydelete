@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>PACKAGE_DELETE_BODY</key>
-	<string>Durch das löschen von „%@“ wird das paket „%@“ deinstalliert.</string>
+	<string>Durch das löschen von „%@“ wird das Paket „%@“ deinstalliert.</string>
 	<key>PACKAGE_FINISH_BODY</key>
 	<string>Um „%@“ zu deinstallieren müssen sie das %@.</string>
 	<key>PACKAGE_FINISH_OKAY</key>
