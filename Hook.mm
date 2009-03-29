@@ -99,7 +99,19 @@ static inline NSString *CDLocalizedString(NSString *key) {
 }
 
 - (void)closeBoxClicked_finish {
-	if(!_pkgName && ![[_SBIcon displayName] isEqualToString:@"Installer"]) {
+	if(!_pkgName) {
+
+		// Specialcase Icy if installed outside Cydia.
+		Class $SBApplicationController = objc_getClass("SBApplicationController");
+		id sharedSBApplicationController = [$SBApplicationController sharedInstance];
+		id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
+		NSString *bundle = [[app bundle] bundleIdentifier];
+		if([bundle isEqualToString:@"com.ripdev.icy"]) {
+			_cydiaManaged = false;
+			[self askDelete];
+			return;
+		}
+
 		NSString *body = [[NSString alloc] initWithFormat:CDLocalizedString(@"PACKAGE_NOT_CYDIA_BODY"), [_SBIcon displayName]];
 		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:CDLocalizedString(@"PACKAGE_NOT_CYDIA_TITLE")
 								message:body
@@ -191,12 +203,32 @@ static inline NSString *CDLocalizedString(NSString *key) {
 		Class $SBApplicationController = objc_getClass("SBApplicationController");
 		SBApplicationController *sharedSBApplicationController = [$SBApplicationController sharedInstance];
 		id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
-		[sharedSBApplicationController removeApplicationsFromModelWithBundleIdentifier:[[app bundle] bundleIdentifier]];
+		NSString *bundle = [[app bundle] bundleIdentifier];
+		[sharedSBApplicationController removeApplicationsFromModelWithBundleIdentifier:bundle];
 
 		/* Uninstall the icon with the cool "winking out of existence" animation! */
 		Class $SBIconController = objc_getClass("SBIconController");
 		id sharedSBIconController = [$SBIconController sharedInstance];
 		[sharedSBIconController uninstallIcon:_SBIcon animate:YES];
+
+		if([bundle isEqualToString:@"jp.ashikase.springjumps"]) {
+			Class $SBIconModel = objc_getClass("SBIconModel");
+			id sharedSBIconModel = [$SBIconModel sharedInstance];
+
+			NSArray *allBundles = [sharedSBApplicationController allApplications];
+			int i = 0;
+			int count = [allBundles count];
+			for(i = 0; i < count; i++) {
+				SBApplication *curApp = [allBundles objectAtIndex:i];
+				NSString *bundle = [curApp bundleIdentifier];
+				if(![bundle hasPrefix:@"jp.ashikase.springjumps."])
+					continue;
+				SBIcon *curIcon = [sharedSBIconModel iconForDisplayIdentifier:[curApp displayIdentifier]];
+				if(!curIcon) continue;
+				[sharedSBApplicationController removeApplicationsFromModelWithBundleIdentifier:bundle];
+				[sharedSBIconController uninstallIcon:curIcon animate:YES];
+			}
+		}
 
 		if([body length] > 0) {
 			_finish = [CyDelete getFinish:body];
@@ -287,7 +319,8 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
 	NSString *bundle = [_SBIcon displayIdentifier];
 	if([bundle hasPrefix:@"com.apple."]
 	|| [bundle isEqualToString:@"com.saurik.Cydia"]
-	|| [bundle hasPrefix:@"com.bigboss.categories."])
+	|| [bundle hasPrefix:@"com.bigboss.categories."]
+	|| [bundle hasPrefix:@"jp.ashikase.springjumps."])
 		return NO;
 	else return YES;
 }
