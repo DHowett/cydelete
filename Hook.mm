@@ -322,6 +322,7 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
 	if([bundle hasPrefix:@"com.apple."]
 	|| [bundle isEqualToString:@"com.saurik.Cydia"]
 	|| [bundle hasPrefix:@"com.bigboss.categories."]
+	|| [bundle isEqualToString:@"com.ripdev.icy"]
 	|| [bundle hasPrefix:@"jp.ashikase.springjumps."])
 		return NO;
 	else return YES;
