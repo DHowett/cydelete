@@ -160,6 +160,8 @@ static inline NSString *CDLocalizedString(NSString *key) {
 	if([context isEqualToString:@"askDelete"]) {
 		if(buttonIndex == 1) {
 			[self _uninstall];
+		} else {
+			[self release];
 		}
 	} else if([context isEqualToString:@"finish"]) {
 		[self finishUninstall];
@@ -280,6 +282,7 @@ static inline NSString *CDLocalizedString(NSString *key) {
 }
 
 - dealloc {
+	NSLog(@"CD: Goodbye, cruel world.");
 	[self killHUD];
 	[_hud release];
 	[_win release];
@@ -342,6 +345,7 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 	}
 	id qd = [[CyDelete alloc] initWithIcon:_SBIcon path:path];
 	[qd _closeBoxClicked];
+	[qd release];
 }
 
 extern "C" void CyDeleteInitialize() {
