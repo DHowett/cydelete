@@ -5,16 +5,11 @@
 static SBApplicationController *sharedSBApplicationController = nil;
 static NSBundle *cyDelBundle = nil;
 
-static NSString *SBLocalizedString(NSString *key) {
-	return [[NSBundle mainBundle] localizedStringForKey:key value:@"None" table:@"SpringBoard"];
-}
+#define SBLocalizedString(key) [[NSBundle mainBundle] localizedStringForKey:key value:@"None" table:@"SpringBoard"]
+#define CDLocalizedString(key) [cyDelBundle localizedStringForKey:key value:key table:nil]
 
 static void initTranslation() {
 	cyDelBundle = [[NSBundle bundleWithPath:BUNDLE] retain];
-}
-
-static inline NSString *CDLocalizedString(NSString *key) {
-	return [cyDelBundle localizedStringForKey:key value:key table:nil];
 }
 
 @implementation CyDelete
