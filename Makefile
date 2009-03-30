@@ -47,14 +47,10 @@ clean:
 
 package: $(Target) setuid
 	rm -rf _
-	mkdir -p _/Library/MobileSubstrate/DynamicLibraries
-	mkdir -p _$(BUNDLEDIR)
-	mkdir -p _/usr/libexec/cydelete
+	svn export layout _
 	cp $(Target) _/Library/MobileSubstrate/DynamicLibraries
 	cp CyDelete.plist _/Library/MobileSubstrate/DynamicLibraries
-	cp scripts/* _/usr/libexec/cydelete
 	cp setuid _/usr/libexec/cydelete
-	svn export ./$(BUNDLENAME) _$(BUNDLEDIR)/$(BUNDLENAME)
 	rm _$(BUNDLEDIR)/$(BUNDLENAME)/convert.sh
 	svn export ./DEBIAN _/DEBIAN
 	chown 0.80 _ -R
