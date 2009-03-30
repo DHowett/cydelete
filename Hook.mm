@@ -2,6 +2,7 @@
 
 #define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
 
+static SBApplicationController *sharedSBApplicationController = nil;
 static NSBundle *cyDelBundle = nil;
 
 static NSString *SBLocalizedString(NSString *key) {
@@ -30,6 +31,14 @@ static inline NSString *CDLocalizedString(NSString *key) {
 	[_hud removeFromSuperview];
 	[_win resignKeyWindow];
 	[_win setHidden:YES];
+}
+
+- (void)removeFromMIList:(NSString *)bundle {
+	NSString *path([NSString stringWithFormat:@"%@/Library/Caches/com.apple.mobile.installation.plist", NSHomeDirectory()]);
+	NSMutableDictionary *cache = [[NSMutableDictionary alloc] initWithContentsOfFile:path];
+	[cache autorelease];
+	[[cache objectForKey:@"System"] removeObjectForKey:bundle];
+	[cache writeToFile:path atomically:YES];
 }
 
 + (NSInteger)getFinish:(NSString *)text {
@@ -68,8 +77,6 @@ static inline NSString *CDLocalizedString(NSString *key) {
 }
 
 - (void)_closeBoxClicked {
-	Class $SBApplicationController = objc_getClass("SBApplicationController");
-	id sharedSBApplicationController = [$SBApplicationController sharedInstance];
 	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
 	NSString *bundle = [[app bundle] bundleIdentifier];
 	if([bundle isEqualToString:@"com.ripdev.Installer"]
@@ -85,8 +92,6 @@ static inline NSString *CDLocalizedString(NSString *key) {
 
 - (void)closeBoxClicked_thread:(id)callingThread {
 	id pool = [[NSAutoreleasePool alloc] init];
-	Class $SBApplicationController = objc_getClass("SBApplicationController");
-	id sharedSBApplicationController = [$SBApplicationController sharedInstance];
 	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
 	NSString *bundle = [[app bundle] bundleIdentifier];
 	NSString *title = [app displayName];
@@ -102,8 +107,6 @@ static inline NSString *CDLocalizedString(NSString *key) {
 	if(!_pkgName) {
 
 		// Specialcase Icy if installed outside Cydia.
-		Class $SBApplicationController = objc_getClass("SBApplicationController");
-		id sharedSBApplicationController = [$SBApplicationController sharedInstance];
 		id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
 		NSString *bundle = [[app bundle] bundleIdentifier];
 		if([bundle isEqualToString:@"com.ripdev.icy"]) {
@@ -174,25 +177,22 @@ static inline NSString *CDLocalizedString(NSString *key) {
 	id pool = [[NSAutoreleasePool alloc] init];
 	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_dpkg.sh %@", _pkgName];
 	NSString *body = __CyDelete_outputForShellCommand(command);
-	[self killHUD];
 	[self performSelector:@selector(uninstalled:) onThread:callingThread withObject:body waitUntilDone:YES];
 	[pool drain];
 }
 
 - (void)uninstall_thread_nondpkg:(NSThread *)callingThread {
 	id pool = [[NSAutoreleasePool alloc] init];
-	Class $SBApplicationController = objc_getClass("SBApplicationController");
-	SBApplicationController *sharedSBApplicationController = [$SBApplicationController sharedInstance];
 	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
 	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_nondpkg.sh %@", [app path]];
 	system([command UTF8String]);
-	[self killHUD];
 	[self performSelector:@selector(uninstalled:) onThread:callingThread withObject:nil waitUntilDone:YES];
 	[pool drain];
 }
 
 - (void)uninstalled:(NSString *)body {
 	if(!body && _cydiaManaged) {
+		[self killHUD];
 		body = [[NSString alloc] initWithFormat:CDLocalizedString(@"PACKAGE_UNINSTALL_ERROR_BODY"), _pkgName];
 		UIAlertView *delView = [[UIAlertView alloc] initWithTitle:CDLocalizedString(@"PACKAGE_UNINSTALL_ERROR_TITLE") message:body delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
 		[delView show];
@@ -200,8 +200,6 @@ static inline NSString *CDLocalizedString(NSString *key) {
 		[body release];
 	} else {
 		/* Remove the Application from the ApplicationController */
-		Class $SBApplicationController = objc_getClass("SBApplicationController");
-		SBApplicationController *sharedSBApplicationController = [$SBApplicationController sharedInstance];
 		id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
 		NSString *bundle = [[app bundle] bundleIdentifier];
 		[sharedSBApplicationController removeApplicationsFromModelWithBundleIdentifier:bundle];
@@ -210,6 +208,8 @@ static inline NSString *CDLocalizedString(NSString *key) {
 		Class $SBIconController = objc_getClass("SBIconController");
 		id sharedSBIconController = [$SBIconController sharedInstance];
 		[sharedSBIconController uninstallIcon:_SBIcon animate:YES];
+
+		[self removeFromMIList:bundle];
 
 		if([bundle isEqualToString:@"jp.ashikase.springjumps"]) {
 			Class $SBIconModel = objc_getClass("SBIconModel");
@@ -229,6 +229,8 @@ static inline NSString *CDLocalizedString(NSString *key) {
 				[sharedSBIconController uninstallIcon:curIcon animate:YES];
 			}
 		}
+
+		[self killHUD];
 
 		if([body length] > 0) {
 			_finish = [CyDelete getFinish:body];
@@ -328,7 +330,7 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
 static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 	NSString *path;
 	Class $SBApplicationController = objc_getClass("SBApplicationController");
-	id sharedSBApplicationController = [$SBApplicationController sharedInstance];
+	sharedSBApplicationController = [$SBApplicationController sharedInstance];
 	path = [[sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]] path];
 
 	if([path isEqualToString:@"/Applications/Web.app"] ||
