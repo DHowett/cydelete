@@ -277,7 +277,6 @@ static void initTranslation() {
 }
 
 - dealloc {
-	NSLog(@"CD: Goodbye, cruel world.");
 	[self killHUD];
 	[_hud release];
 	[_win release];
