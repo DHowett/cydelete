@@ -25,6 +25,7 @@ Objects= Hook.o
 
 Target=CyDelete.dylib
 all: CyDelete.dylib setuid
+	(cd CyDeleteSettings.bundle; $(MAKE) $(MFLAGS) all)
 
 setuid:
 		/opt/iphone-sdk/bin/arm-apple-darwin9-gcc -o setuid setuid.c
@@ -44,12 +45,14 @@ install: $(Target) setuid
 
 clean:
 		rm -f *.o $(Target) setuid
+		(cd CyDeleteSettings.bundle; $(MAKE) $(MFLAGS) clean)
 
 package: $(Target) setuid
 	rm -rf _
 	svn export layout _
 	cp $(Target) _/Library/MobileSubstrate/DynamicLibraries
 	cp CyDelete.plist _/Library/MobileSubstrate/DynamicLibraries
+	cp CyDeleteSettings.bundle/CyDeleteSettings _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/
 	cp setuid _/usr/libexec/cydelete
 	rm _$(BUNDLEDIR)/$(BUNDLENAME)/convert.sh
 	svn export ./DEBIAN _/DEBIAN

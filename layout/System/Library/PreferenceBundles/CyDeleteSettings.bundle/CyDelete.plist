@@ -1,0 +1,10 @@
+title="CyDelete";
+items=(
+	{
+		cell="PSSwitchCell";
+		default=true;
+		defaults="net.howett.cydelete";
+		key="TestOne";
+		label="Testing One";
+	}
+);
