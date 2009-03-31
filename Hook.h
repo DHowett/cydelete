@@ -19,11 +19,14 @@
 
 - (BOOL)__CD_allowsCloseBox;
 - (void)__CD_closeBoxClicked:(id)fp8;
+- (BOOL)__CD_deactivated;
 @end
 
 NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd);
 static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon);
 static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8);
+static void __$CyDelete_deactivated(SBApplication<CyDelete> *self);
+static void CDUpdatePrefs();
 extern "C" void CyDeleteInitialize();
 
 @interface CyDelete : NSObject {

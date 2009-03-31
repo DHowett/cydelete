@@ -1,9 +1,11 @@
 #import "Hook.h"
+#import <Foundation/NSDistributedNotificationCenter.h>
 
 #define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
 
 static SBApplicationController *sharedSBApplicationController = nil;
 static NSBundle *cyDelBundle = nil;
+static NSDictionary *cyDelPrefs = nil;
 
 #define SBLocalizedString(key) [[NSBundle mainBundle] localizedStringForKey:key value:@"None" table:@"SpringBoard"]
 #define CDLocalizedString(key) [cyDelBundle localizedStringForKey:key value:key table:nil]
@@ -317,7 +319,7 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
 
 	NSString *bundle = [_SBIcon displayIdentifier];
 	if([bundle hasPrefix:@"com.apple."]
-	|| [bundle isEqualToString:@"com.saurik.Cydia"]
+	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && ![[cyDelPrefs objectForKey:@"CDDeleteCydia"] boolValue])
 	|| [bundle hasPrefix:@"com.bigboss.categories."]
 	|| [bundle isEqualToString:@"com.ripdev.icy"]
 	|| [bundle hasPrefix:@"jp.ashikase.springjumps."])
@@ -342,12 +344,32 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 	[qd release];
 }
 
+static void __$CyDelete_deactivated(SBApplication<CyDelete> *self) {
+	if([[self displayIdentifier] isEqualToString:@"com.apple.Preferences"]) {
+		CDUpdatePrefs();
+	}
+	[self __CD_deactivated];
+}
+
+static void CDUpdatePrefs() {
+	NSDictionary *prefs = [[NSDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/net.howett.cydelete.plist"];
+	if(!cyDelPrefs || ![cyDelPrefs isEqualToDictionary:prefs]) {
+		[cyDelPrefs release];
+		cyDelPrefs = prefs;
+	}
+}
+
 extern "C" void CyDeleteInitialize() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	Class _$SBIcon = objc_getClass("SBIcon");
 	MSHookMessage(_$SBIcon, @selector(allowsCloseBox), (IMP) &__$CyDelete_allowsCloseBox, "__CD_");
 	MSHookMessage(_$SBIcon, @selector(closeBoxClicked:), (IMP) &__$CyDelete_closeBoxClicked, "__CD_");
 	initTranslation();
+	
+	Class _$SBApplication = objc_getClass("SBApplication");
+	MSHookMessage(_$SBApplication, @selector(deactivated), (IMP) &__$CyDelete_deactivated, "__CD_");
+
+	CDUpdatePrefs();
 
 	[pool release];
 }
