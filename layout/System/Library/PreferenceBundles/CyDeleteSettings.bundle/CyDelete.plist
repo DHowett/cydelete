@@ -18,7 +18,7 @@
 			<key>key</key>
 			<string>CDNonCydiaDelete</string>
 			<key>label</key>
-			<string>Non-Cydia Deletion</string>
+			<string>NON_CYDIA_DEL</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -30,13 +30,13 @@
 			<key>cell</key>
 			<string>PSTitleValueCell</string>
 			<key>label</key>
-			<string>Allows CyDelete to delete Applications that were not installed with Cydia. This can be dangerous, and applications uninstalled in this way can only be reinstalled manually.</string>
+			<string>NON_CYDIA_DEL_TEXT</string>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Protected Applications</string>
+			<string>PROTECTED_TITLE</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -76,7 +76,7 @@
 			<key>cell</key>
 			<string>PSTitleValueCell</string>
 			<key>label</key>
-			<string>Deleting both of these applications will leave you without a Graphical Interface for installing packages, and is NOT recommended.</string>
+			<string>PROTECTED_WARNING</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -88,7 +88,7 @@
 			<key>cell</key>
 			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Donate via PayPal</string>
+			<string>DONATE</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -100,7 +100,7 @@
 			<key>cell</key>
 			<string>PSTitleValueCell</string>
 			<key>label</key>
-			<string>CyDelete (c) 2009 Dustin L. Howett</string>
+			<string>CyDelete © 2009 Dustin L. Howett</string>
 		</dict>
 	</array>
 	<key>title</key>
