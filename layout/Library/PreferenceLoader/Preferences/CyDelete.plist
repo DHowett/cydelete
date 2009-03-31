@@ -10,6 +10,8 @@
 		<string>PSLinkCell</string>
 		<key>isController</key>
 		<true/>
+		<key>icon</key>
+		<string>CyDelete.png</string>
 		<key>label</key>
 		<string>CyDelete</string>
 	</dict>
