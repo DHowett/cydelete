@@ -12,18 +12,6 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<true/>
-			<key>defaults</key>
-			<string>net.howett.cydelete</string>
-			<key>key</key>
-			<string>CDDeleteCydia</string>
-			<key>label</key>
-			<string>Delete Cydia</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
 			<false/>
 			<key>defaults</key>
 			<string>net.howett.cydelete</string>
@@ -43,6 +31,52 @@
 			<string>PSTitleValueCell</string>
 			<key>label</key>
 			<string>Allows CyDelete to delete Applications that were not installed with Cydia. This can be dangerous, and applications uninstalled in this way can only be reinstalled manually.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Protected Applications</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>net.howett.cydelete</string>
+			<key>key</key>
+			<string>CDProtectCydia</string>
+			<key>label</key>
+			<string>Cydia</string>
+			<key>icon</key>
+			<string>Cydia.png</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>net.howett.cydelete</string>
+			<key>key</key>
+			<string>CDProtectIcy</string>
+			<key>label</key>
+			<string>Icy</string>
+			<key>icon</key>
+			<string>Icy.png</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>isStaticText</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSTitleValueCell</string>
+			<key>label</key>
+			<string>Deleting both of these applications will leave you without a Graphical Interface for installing packages, and is NOT recommended.</string>
 		</dict>
 		<dict>
 			<key>cell</key>

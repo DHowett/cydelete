@@ -14,6 +14,13 @@ static void initTranslation() {
 	cyDelBundle = [[NSBundle bundleWithPath:BUNDLE] retain];
 }
 
+static bool CDGetBoolPref(id key, bool value) {
+	if(!cyDelPrefs) return value;
+	id object = [cyDelPrefs objectForKey:key];
+	if(!object) return value;
+	else return [object boolValue];
+}
+
 @implementation CyDelete
 
 - (void)startHUD:(id)message {
@@ -101,8 +108,7 @@ static void initTranslation() {
 }
 
 - (void)closeBoxClicked_finish {
-	if(!_pkgName) {
-
+	if(!_pkgName && !CDGetBoolPref(@"CDNonCydiaDelete", false)) {
 		// Specialcase Icy if installed outside Cydia.
 		id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
 		NSString *bundle = [[app bundle] bundleIdentifier];
@@ -123,7 +129,7 @@ static void initTranslation() {
 		[alertUnknown release];
 		return;
 	} else {
-		_cydiaManaged = true;
+		_cydiaManaged = (_pkgName != nil);
 		[self askDelete];
 		return;
 	}
@@ -319,9 +325,9 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
 
 	NSString *bundle = [_SBIcon displayIdentifier];
 	if([bundle hasPrefix:@"com.apple."]
-	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && ![[cyDelPrefs objectForKey:@"CDDeleteCydia"] boolValue])
+	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
 	|| [bundle hasPrefix:@"com.bigboss.categories."]
-	|| [bundle isEqualToString:@"com.ripdev.icy"]
+	|| ([bundle isEqualToString:@"com.ripdev.icy"] && CDGetBoolPref(@"CDProtectIcy", false))
 	|| [bundle hasPrefix:@"jp.ashikase.springjumps."])
 		return NO;
 	else return YES;
@@ -353,6 +359,7 @@ static void __$CyDelete_deactivated(SBApplication<CyDelete> *self) {
 
 static void CDUpdatePrefs() {
 	NSDictionary *prefs = [[NSDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/net.howett.cydelete.plist"];
+	if(!prefs) return;
 	if(!cyDelPrefs || ![cyDelPrefs isEqualToDictionary:prefs]) {
 		[cyDelPrefs release];
 		cyDelPrefs = prefs;
