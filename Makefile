@@ -1,56 +1,46 @@
-Compiler=/opt/iphone-sdk/bin/arm-apple-darwin9-g++
+CC=/opt/iphone-sdk/bin/arm-apple-darwin9-g++
 IP=root@ipod
 
 BUNDLEDIR=/Library/MobileSubstrate/DynamicLibraries
 BUNDLENAME=CyDelete.bundle
 
-LDFLAGS=	-lobjc \
-		-framework Foundation \
-		-framework UIKit \
-		-framework CoreFoundation \
-		-multiply_defined suppress \
-		-dynamiclib \
-		-init _CyDeleteInitialize \
-		-Wall \
-		-Werror \
-		-lsubstrate \
-		-lobjc \
-		-ObjC++ \
-		-fobjc-exceptions \
-		-fobjc-call-cxx-cdtors #-ggdb
+LDFLAGS=-lobjc -framework Foundation -framework UIKit -framework CoreFoundation \
+	-multiply_defined suppress -dynamiclib -init _CyDeleteInitialize -Wall \
+	-Werror -lsubstrate -lobjc -ObjC++ -fobjc-exceptions -fobjc-call-cxx-cdtors #-ggdb
 
-CFLAGS= -dynamiclib -DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\""#-ggdb
+CFLAGS=-dynamiclib -DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\""#-ggdb
 
-Objects= Hook.o
+OFILES=Hook.o
 
-Target=CyDelete.dylib
-all: CyDelete.dylib setuid
-	(cd CyDeleteSettings.bundle; $(MAKE) $(MFLAGS) all)
+TARGET=CyDelete.dylib
+
+all: $(TARGET) setuid
+	@(cd CyDeleteSettings.bundle; $(MAKE) $(MFLAGS) all)
 
 setuid:
-		/opt/iphone-sdk/bin/arm-apple-darwin9-gcc -o setuid setuid.c
-		CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
+	/opt/iphone-sdk/bin/arm-apple-darwin9-gcc -o setuid setuid.c
+	CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
-$(Target):	$(Objects)
-		$(Compiler) $(LDFLAGS) -o $@ $^
-		CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
+$(TARGET): $(OFILES)
+	$(CC) $(LDFLAGS) -o $@ $^
+	CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
-install: $(Target) setuid
-		scp cydelete_$(shell grep Version DEBIAN/control | cut -d' ' -f2).deb $(IP):
-		ssh $(IP) dpkg -i cydelete_$(shell grep Version DEBIAN/control | cut -d' ' -f2).deb
-		ssh $(IP) killall -HUP SpringBoard
+install: $(TARGET) setuid
+	scp cydelete_$(shell grep Version DEBIAN/control | cut -d' ' -f2).deb $(IP):
+	ssh $(IP) dpkg -i cydelete_$(shell grep Version DEBIAN/control | cut -d' ' -f2).deb
+	ssh $(IP) killall -HUP SpringBoard
 
-%.o:	%.mm
-		$(Compiler) -c $(CFLAGS) $< -o $@
+%.o: %.mm
+	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
-		rm -f *.o $(Target) setuid
-		(cd CyDeleteSettings.bundle; $(MAKE) $(MFLAGS) clean)
+	rm -f *.o $(TARGET) setuid
+	@(cd CyDeleteSettings.bundle; $(MAKE) $(MFLAGS) clean)
 
-package: $(Target) setuid
+package: $(TARGET) setuid
 	rm -rf _
 	svn export layout _
-	cp $(Target) _/Library/MobileSubstrate/DynamicLibraries
+	cp $(TARGET) _/Library/MobileSubstrate/DynamicLibraries
 	cp CyDelete.plist _/Library/MobileSubstrate/DynamicLibraries
 	cp CyDeleteSettings.bundle/CyDeleteSettings _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/
 	cp setuid _/usr/libexec/cydelete
