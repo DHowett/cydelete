@@ -254,7 +254,7 @@ static bool CDGetBoolPref(id key, bool value) {
 			initWithTitle:CDLocalizedString(@"PACKAGE_FINISH_TITLE")
 			buttons:[NSArray arrayWithObjects:[CyDelete getFinishString:_finish], nil]
 			defaultButtonIndex:1
-			delegate:self
+			delegate:[self retain]
 			context:@"finish"]
 		autorelease];
 	[finishSheet setBodyText:body];
