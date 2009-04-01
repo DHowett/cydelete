@@ -13,6 +13,7 @@ CFLAGS=-dynamiclib -DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\""#-ggdb
 OFILES=Hook.o
 
 TARGET=CyDelete.dylib
+VERSION=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
 
 all: $(TARGET) setuid
 	@(cd CyDeleteSettings.bundle; $(MAKE) $(MFLAGS) all)
@@ -26,8 +27,8 @@ $(TARGET): $(OFILES)
 	CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
 install: $(TARGET) setuid
-	scp cydelete_$(shell grep Version DEBIAN/control | cut -d' ' -f2).deb $(IP):
-	ssh $(IP) dpkg -i cydelete_$(shell grep Version DEBIAN/control | cut -d' ' -f2).deb
+	scp cydelete_$(VERSION).deb $(IP):
+	ssh $(IP) dpkg -i cydelete_$(VERSION).deb
 	ssh $(IP) killall -HUP SpringBoard
 
 %.o: %.mm
@@ -41,12 +42,10 @@ package: $(TARGET) setuid
 	rm -rf _
 	svn export layout _
 	cp $(TARGET) _/Library/MobileSubstrate/DynamicLibraries
-	cp CyDelete.plist _/Library/MobileSubstrate/DynamicLibraries
 	cp CyDeleteSettings.bundle/CyDeleteSettings _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/
 	cp setuid _/usr/libexec/cydelete
 	rm _$(BUNDLEDIR)/$(BUNDLENAME)/convert.sh
-	svn export ./DEBIAN _/DEBIAN
 	chown 0.80 _ -R
 	chmod 6755 _/usr/libexec/cydelete/setuid
-	dpkg-deb -b _ cydelete_$(shell grep Version DEBIAN/control | cut -d' ' -f2).deb
+	dpkg-deb -b _ cydelete_$(VERSION).deb
 

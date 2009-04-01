@@ -3,7 +3,7 @@ Name: CyDelete
 Depends: mobilesubstrate, preferenceloader
 Conflicts: com.sosiphone.cydeletefr
 Replaces: com.sosiphone.cydeletefr
-Version: 1.1.99
+Version: 1.1.991
 Architecture: iphoneos-arm
 Description: Delete Cydia packages from SpringBoard, just like App Store applications!
 Maintainer: Dustin Howett <dustin@howett.net>
