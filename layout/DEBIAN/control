@@ -1,6 +1,6 @@
 Package: net.howett.cydelete
 Name: CyDelete
-Depends: mobilesubstrate, preferenceloader, dpkg
+Depends: mobilesubstrate, preferenceloader, apt
 Conflicts: com.sosiphone.cydeletefr
 Version: 1.1.992
 Architecture: iphoneos-arm
