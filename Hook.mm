@@ -1,5 +1,5 @@
 #import "Hook.h"
-#import <Foundation/NSDistributedNotificationCenter.h>
+#import <mach/mach_host.h>
 
 #define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
 
@@ -19,6 +19,17 @@ static bool CDGetBoolPref(id key, bool value) {
 	id object = [cyDelPrefs objectForKey:key];
 	if(!object) return value;
 	else return [object boolValue];
+}
+
+// Thanks _BigBoss_!
+static int getFreeMemory() {
+	vm_size_t pageSize;
+	host_page_size(mach_host_self(), &pageSize);
+	struct vm_statistics vmStats;
+	mach_msg_type_number_t infoCount = sizeof(vmStats);
+	host_statistics(mach_host_self(), HOST_VM_INFO, (host_info_t)&vmStats, &infoCount);
+	int availMem = vmStats.free_count + vmStats.inactive_count;
+	return (availMem * pageSize) / 1024 / 1024;
 }
 
 @implementation CyDelete
@@ -345,6 +356,7 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 		[_SBIcon __CD_closeBoxClicked:fp8];
 		return;
 	}
+	if(getFreeMemory() < 20) return;
 	id qd = [[CyDelete alloc] initWithIcon:_SBIcon path:path];
 	[qd _closeBoxClicked];
 	[qd release];
