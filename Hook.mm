@@ -335,7 +335,7 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
 	if([_SBIcon __CD_allowsCloseBox]) return YES;
 
 	NSString *bundle = [_SBIcon displayIdentifier];
-	if([bundle hasPrefix:@"com.apple."]
+	if(([bundle hasPrefix:@"com.apple."] && ![bundle hasPrefix:@"com.apple.samplecode."])
 	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
 	|| [bundle hasPrefix:@"com.bigboss.categories."]
 	|| ([bundle isEqualToString:@"com.ripdev.icy"] && CDGetBoolPref(@"CDProtectIcy", false))
