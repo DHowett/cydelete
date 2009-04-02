@@ -1,8 +1,8 @@
 Package: net.howett.cydelete
 Name: CyDelete
-Depends: mobilesubstrate, preferenceloader, apt
+Depends: mobilesubstrate, preferenceloader, apt, bash, grep, coreutils
 Conflicts: com.sosiphone.cydeletefr
-Version: 1.1.992
+Version: 1.1.994
 Architecture: iphoneos-arm
 Description: Delete Cydia packages from SpringBoard, just like App Store applications!
 Maintainer: Dustin Howett <dustin@howett.net>
