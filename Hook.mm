@@ -356,7 +356,13 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 		[_SBIcon __CD_closeBoxClicked:fp8];
 		return;
 	}
-	if(getFreeMemory() < 20) return;
+	if(getFreeMemory() < 20) {
+		id memView = [[[UIAlertView alloc] initWithTitle:nil message:CDLocalizedString(@"NOT_ENOUGH_MEMORY")
+						   delegate:nil cancelButtonTitle:CDLocalizedString(@"PACKAGE_FINISH_OKAY")
+						   otherButtonTitles:nil] autorelease];
+		[memView show];
+		return;
+	}
 	id qd = [[CyDelete alloc] initWithIcon:_SBIcon path:path];
 	[qd _closeBoxClicked];
 	[qd release];
