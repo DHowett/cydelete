@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NOT_ENOUGH_MEMORY</key>
+	<string>内存不足</string>
 	<key>PACKAGE_DELETE_BODY</key>
 	<string>删除“%@”将会卸载“%@”。</string>
 	<key>PACKAGE_FINISH_BODY</key>
