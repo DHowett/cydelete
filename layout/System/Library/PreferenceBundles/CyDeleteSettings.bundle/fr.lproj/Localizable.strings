@@ -7,10 +7,10 @@
 	<key>NON_CYDIA_DEL</key>
 	<string>Application non-Cydia</string>
 	<key>NON_CYDIA_DEL_TEXT</key>
-	<string>Permettre à Cydelete de supprimer les applications qui n'ont pas été installées avec Cydia. Cette option n'est pas recomandée, elle peut être dangereuse. Les application supprimées de cette manière ne pourront être réinstallées que manuellement.</string>
+	<string>Permettre Ã  Cydelete de supprimer les applications qui n'ont pas Ã©tÃ© installÃ©es avec Cydia. Cette option n'est pas recomandÃ©e, elle peut Ãªtre dangereuse. Les application supprimÃ©es de cette maniÃ¨re ne pourront Ãªtre rÃ©installÃ©es que manuellement.</string>
 	<key>PROTECTED_TITLE</key>
-	<string>Application protégée</string>
+	<string>Application protÃ©gÃ©e</string>
 	<key>PROTECTED_WARNING</key>
-	<string>Supprimer ce type d'applications (installeurs) vous laissera sans interface graphique pour installer vos applications. Ceci est fortement déconseillé !</string>
+	<string>Supprimer ce type d'applications (installeurs) vous laissera sans interface graphique pour installer vos applications. Ceci est fortement dÃ©conseillÃ© !</string>
 </dict>
 </plist>
