@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NOT_ENOUGH_MEMORY</key>
+	<string>Niet genoeg geheugen</string>
 	<key>PACKAGE_DELETE_BODY</key>
 	<string>Het verwijderen van “%@” zal “%@” deïnstalleren.</string>
 	<key>PACKAGE_FINISH_BODY</key>
