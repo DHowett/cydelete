@@ -6,7 +6,7 @@ LDFLAGS=-lobjc -framework Foundation -framework UIKit -framework CoreFoundation 
 
 all: CyDeleteSettings
 
-CyDeleteSettings: CyDeleteSettings.o LocalizedListController.o
+CyDeleteSettings: CyDeleteSettings.o
 	$(CC) $(LDFLAGS) -o $@ $^
 	CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
