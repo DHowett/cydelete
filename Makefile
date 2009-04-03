@@ -3,17 +3,17 @@ IP=root@ipod
 
 BUNDLEDIR=/Library/MobileSubstrate/DynamicLibraries
 BUNDLENAME=CyDelete.bundle
+VERSION=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
 
 LDFLAGS=-lobjc -framework Foundation -framework UIKit -framework CoreFoundation \
 	-multiply_defined suppress -dynamiclib -init _CyDeleteInitialize -Wall \
 	-Werror -lsubstrate -lobjc -ObjC++ -fobjc-exceptions -fobjc-call-cxx-cdtors #-ggdb
 
-CFLAGS=-dynamiclib -DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\""#-ggdb
+CFLAGS=-dynamiclib -DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\"" -DVERSION="$(VERSION)"#-ggdb
 
 OFILES=Hook.o
 
 TARGET=CyDelete.dylib
-VERSION=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
 
 all: $(TARGET) setuid
 	@(cd CyDeleteSettings.bundle; $(MAKE) $(MFLAGS) all)
