@@ -241,6 +241,7 @@ static int getFreeMemory() {
 					continue;
 				SBIcon *curIcon = [sharedSBIconModel iconForDisplayIdentifier:[curApp displayIdentifier]];
 				if(!curIcon) continue;
+				[self removeFromMIList:bundle];
 				[sharedSBApplicationController removeApplicationsFromModelWithBundleIdentifier:bundle];
 				[sharedSBIconController uninstallIcon:curIcon animate:YES];
 			}
