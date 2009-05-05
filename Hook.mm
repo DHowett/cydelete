@@ -6,6 +6,7 @@
 static SBApplicationController *sharedSBApplicationController = nil;
 static NSBundle *cyDelBundle = nil;
 static NSDictionary *cyDelPrefs = nil;
+static UIImage *safariCloseBox = nil;
 
 #define SBLocalizedString(key) [[NSBundle mainBundle] localizedStringForKey:key value:@"None" table:@"SpringBoard"]
 #define CDLocalizedString(key) [cyDelBundle localizedStringForKey:key value:key table:nil]
@@ -332,8 +333,9 @@ NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd) {
 }
 
 
-static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
+static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon, SEL sel) {
 	if([_SBIcon __CD_allowsCloseBox]) return YES;
+	if (!safariCloseBox) safariCloseBox = [[UIImage imageWithContentsOfFile:@"/Applications/MobileSafari.app/closebox.png"] retain];
 
 	NSString *bundle = [_SBIcon displayIdentifier];
 	if(([bundle hasPrefix:@"com.apple."] && ![bundle hasPrefix:@"com.apple.samplecode."])
@@ -345,7 +347,7 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon) {
 	else return YES;
 }
 
-static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
+static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, SEL sel, id fp8) {
 	NSString *path;
 	Class $SBApplicationController = objc_getClass("SBApplicationController");
 	sharedSBApplicationController = [$SBApplicationController sharedInstance];
@@ -369,7 +371,7 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, id fp8) {
 	[qd release];
 }
 
-static void __$CyDelete_deactivated(SBApplication<CyDelete> *self) {
+static void __$CyDelete_deactivated(SBApplication<CyDelete> *self, SEL sel) {
 	if([[self displayIdentifier] isEqualToString:@"com.apple.Preferences"]) {
 		CDUpdatePrefs();
 	}
@@ -385,11 +387,29 @@ static void CDUpdatePrefs() {
 	}
 }
 
+static void __$CyDelete_setIsShowingCloseBox(SBIcon<CyDelete> *_SBIcon, SEL sel, BOOL fp) {
+	[_SBIcon __CD_setIsShowingCloseBox:fp];
+	if(fp == NO) return;
+
+	UIPushButton *cb;
+	object_getInstanceVariable(_SBIcon, "_closeBox", reinterpret_cast<void**>(&cb));
+
+	Class $SBApplicationController = objc_getClass("SBApplicationController");
+	sharedSBApplicationController = [$SBApplicationController sharedInstance];
+	NSString *path = [[sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]] path];
+
+	if(cb && [path hasPrefix:@"/Applications"]) {
+		[cb setImage:safariCloseBox forState:0];
+		[cb setImage:safariCloseBox forState:1];
+	}
+}
+
 extern "C" void CyDeleteInitialize() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	Class _$SBIcon = objc_getClass("SBIcon");
 	MSHookMessage(_$SBIcon, @selector(allowsCloseBox), (IMP) &__$CyDelete_allowsCloseBox, "__CD_");
 	MSHookMessage(_$SBIcon, @selector(closeBoxClicked:), (IMP) &__$CyDelete_closeBoxClicked, "__CD_");
+	MSHookMessage(_$SBIcon, @selector(setIsShowingCloseBox:), (IMP) &__$CyDelete_setIsShowingCloseBox, "__CD_");
 	initTranslation();
 	
 	Class _$SBApplication = objc_getClass("SBApplication");
