@@ -1,0 +1,22 @@
+IP=root@ipod
+
+VERSION=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
+PACKAGE=$(shell grep Package layout/DEBIAN/control | cut -d' ' -f2)
+
+install:
+	scp $(PACKAGE)_$(VERSION)_iphoneos-arm.deb $(IP):
+	ssh $(IP) dpkg -i $(PACKAGE)_$(VERSION)_iphoneos-arm.deb
+	#ssh $(IP) killall -HUP SpringBoard
+
+package-pre: all
+	rm -rf _
+	svn export layout _ || cp -r layout _
+
+package-build:
+	echo "Installed-Size: $(shell du -ks _ | cut -f 1)" >> _/DEBIAN/control
+	dpkg-deb -b _ $(PACKAGE)_$(VERSION)_iphoneos-arm.deb
+
+package-clean:
+	rm -f $(PACKAGE)_*.deb
+
+package: package-pre package-local package-build
