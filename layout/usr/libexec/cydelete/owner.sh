@@ -3,8 +3,6 @@ cd /var/lib/dpkg/info
 BUNDLE=$1
 TITLE=$2
 
-echo "$0 $*" >> /var/log/CYDELETE.log
-echo "Checking $BUNDLE.list and $TITLE.list" >> /var/log/CYDELETE.log
 if [[ -e "$BUNDLE.list" ]]; then
 	echo -n $BUNDLE
 	exit 0
