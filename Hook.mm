@@ -348,14 +348,11 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon, SEL sel) {
 }
 
 static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, SEL sel, id fp8) {
-	NSString *path;
 	Class $SBApplicationController = objc_getClass("SBApplicationController");
 	sharedSBApplicationController = [$SBApplicationController sharedInstance];
-	path = [[sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]] path];
+	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
 
-	if([path isEqualToString:@"/Applications/Web.app"] ||
-		   [path hasPrefix:@"/private/var/mobile"] ||
-		   [path hasPrefix:@"/var/mobile"] || path == NULL) {
+	if(!app || ![app isSystemApplication]) {
 		[_SBIcon __CD_closeBoxClicked:fp8];
 		return;
 	}
@@ -366,7 +363,7 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, SEL sel, id f
 		[memView show];
 		return;
 	}
-	id qd = [[CyDelete alloc] initWithIcon:_SBIcon path:path];
+	id qd = [[CyDelete alloc] initWithIcon:_SBIcon path:[app path]];
 	[qd _closeBoxClicked];
 	[qd release];
 }
@@ -396,9 +393,9 @@ static void __$CyDelete_setIsShowingCloseBox(SBIcon<CyDelete> *_SBIcon, SEL sel,
 
 	Class $SBApplicationController = objc_getClass("SBApplicationController");
 	sharedSBApplicationController = [$SBApplicationController sharedInstance];
-	NSString *path = [[sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]] path];
+	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
 
-	if(cb && [path hasPrefix:@"/Applications"]) {
+        if([app isSystemApplication]) {
 		[cb setImage:safariCloseBox forState:0];
 		[cb setImage:safariCloseBox forState:1];
 	}
