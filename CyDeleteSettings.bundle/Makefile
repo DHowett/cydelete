@@ -8,6 +8,7 @@ all: CyDeleteSettings
 
 CyDeleteSettings: CyDeleteSettings.o
 	$(CC) $(LDFLAGS) -o $@ $^
+	/opt/iphone-sdk/bin/arm-apple-darwin9-strip -x $@
 	CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
 %.o: %.mm

@@ -21,10 +21,12 @@ include DebMakefile
 
 setuid:
 	/opt/iphone-sdk/bin/arm-apple-darwin9-gcc -o setuid setuid.c
+	/opt/iphone-sdk/bin/arm-apple-darwin9-strip -x setuid
 	CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
 $(TARGET): $(OFILES)
 	$(CC) $(LDFLAGS) -o $@ $^
+	/opt/iphone-sdk/bin/arm-apple-darwin9-strip -x $@
 	CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
 %.o: %.mm
