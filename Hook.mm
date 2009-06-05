@@ -333,11 +333,11 @@ NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd) {
 }
 
 
-static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon, SEL sel) {
-	if([_SBIcon __CD_allowsCloseBox]) return YES;
+HOOK(SBIcon, allowsCloseBox, BOOL) {
+	if(CALL_ORIG(SBIcon, allowsCloseBox)) return YES;
 	if (!safariCloseBox) safariCloseBox = [[UIImage imageWithContentsOfFile:@"/Applications/MobileSafari.app/closebox.png"] retain];
 
-	NSString *bundle = [_SBIcon displayIdentifier];
+	NSString *bundle = [self displayIdentifier];
 	if(([bundle hasPrefix:@"com.apple."] && ![bundle hasPrefix:@"com.apple.samplecode."])
 	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
 	|| [bundle hasPrefix:@"com.bigboss.categories."]
@@ -347,13 +347,13 @@ static BOOL __$CyDelete_allowsCloseBox(SBIcon<CyDelete> *_SBIcon, SEL sel) {
 	else return YES;
 }
 
-static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, SEL sel, id fp8) {
+HOOK(SBIcon, closeBoxClicked$, void, id fp8) {
 	Class $SBApplicationController = objc_getClass("SBApplicationController");
 	sharedSBApplicationController = [$SBApplicationController sharedInstance];
-	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
+	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[self displayIdentifier]];
 
 	if(!app || ![app isSystemApplication]) {
-		[_SBIcon __CD_closeBoxClicked:fp8];
+		CALL_ORIG(SBIcon, closeBoxClicked$, fp8);
 		return;
 	}
 	if(getFreeMemory() < 20) {
@@ -363,16 +363,16 @@ static void __$CyDelete_closeBoxClicked(SBIcon<CyDelete> *_SBIcon, SEL sel, id f
 		[memView show];
 		return;
 	}
-	id qd = [[CyDelete alloc] initWithIcon:_SBIcon path:[app path]];
+	id qd = [[CyDelete alloc] initWithIcon:self path:[app path]];
 	[qd _closeBoxClicked];
 	[qd release];
 }
 
-static void __$CyDelete_deactivated(SBApplication<CyDelete> *self, SEL sel) {
+HOOK(SBApplication, deactivated, void) {
 	if([[self displayIdentifier] isEqualToString:@"com.apple.Preferences"]) {
 		CDUpdatePrefs();
 	}
-	[self __CD_deactivated];
+	CALL_ORIG(SBApplication, deactivated);
 }
 
 static void CDUpdatePrefs() {
@@ -384,16 +384,16 @@ static void CDUpdatePrefs() {
 	}
 }
 
-static void __$CyDelete_setIsShowingCloseBox(SBIcon<CyDelete> *_SBIcon, SEL sel, BOOL fp) {
-	[_SBIcon __CD_setIsShowingCloseBox:fp];
+HOOK(SBIcon, setIsShowingCloseBox$, void, BOOL fp) {
+	CALL_ORIG(SBIcon, setIsShowingCloseBox$, fp);
 	if(fp == NO) return;
 
 	UIPushButton *cb;
-	object_getInstanceVariable(_SBIcon, "_closeBox", reinterpret_cast<void**>(&cb));
+	object_getInstanceVariable(self, "_closeBox", reinterpret_cast<void**>(&cb));
 
 	Class $SBApplicationController = objc_getClass("SBApplicationController");
 	sharedSBApplicationController = [$SBApplicationController sharedInstance];
-	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
+	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[self displayIdentifier]];
 
         if([app isSystemApplication]) {
 		[cb setImage:safariCloseBox forState:0];
@@ -404,13 +404,13 @@ static void __$CyDelete_setIsShowingCloseBox(SBIcon<CyDelete> *_SBIcon, SEL sel,
 extern "C" void CyDeleteInitialize() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	Class _$SBIcon = objc_getClass("SBIcon");
-	MSHookMessage(_$SBIcon, @selector(allowsCloseBox), (IMP) &__$CyDelete_allowsCloseBox, "__CD_");
-	MSHookMessage(_$SBIcon, @selector(closeBoxClicked:), (IMP) &__$CyDelete_closeBoxClicked, "__CD_");
-	MSHookMessage(_$SBIcon, @selector(setIsShowingCloseBox:), (IMP) &__$CyDelete_setIsShowingCloseBox, "__CD_");
+	_SBIcon$allowsCloseBox = MSHookMessage(_$SBIcon, @selector(allowsCloseBox), &$SBIcon$allowsCloseBox);
+	_SBIcon$closeBoxClicked$ = MSHookMessage(_$SBIcon, @selector(closeBoxClicked:), &$SBIcon$closeBoxClicked$);
+	_SBIcon$setIsShowingCloseBox$ = MSHookMessage(_$SBIcon, @selector(setIsShowingCloseBox:), &$SBIcon$setIsShowingCloseBox$);
 	initTranslation();
 	
 	Class _$SBApplication = objc_getClass("SBApplication");
-	MSHookMessage(_$SBApplication, @selector(deactivated), (IMP) &__$CyDelete_deactivated, "__CD_");
+	_SBApplication$deactivated = MSHookMessage(_$SBApplication, @selector(deactivated), &$SBApplication$deactivated);
 
 	CDUpdatePrefs();
 
