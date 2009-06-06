@@ -155,30 +155,31 @@ static int getFreeMemory() {
 		body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_DELETE_BODY"), [_SBIcon displayName], _pkgName];
 	else
 		body = [NSString stringWithFormat:SBLocalizedString(@"DELETE_WIDGET_BODY"), [_SBIcon displayName]];
-	id delSheet = [[[UIActionSheet alloc]
+	id delView = [[[UIAlertView alloc]
 			initWithTitle:title
-			buttons:[NSArray arrayWithObjects:SBLocalizedString(@"UNINSTALL_ICON_CONFIRM"), SBLocalizedString(@"UNINSTALL_ICON_CANCEL"), nil]
-			defaultButtonIndex:2
+			message:body
 			delegate:[self retain]
-			context:@"askDelete"]
+			cancelButtonTitle:nil
+			otherButtonTitles:nil]
 		autorelease];
-	[delSheet setNumberOfRows:1];
-	[delSheet setDestructiveButtonIndex:1];
-	[delSheet setCancelButtonIndex:2];
-	[delSheet setBodyText:body];
-	[delSheet popupAlertAnimated:YES];
+	[delView addButtonWithTitle:SBLocalizedString(@"UNINSTALL_ICON_CONFIRM")];
+	[delView addButtonWithTitle:SBLocalizedString(@"UNINSTALL_ICON_CANCEL")];
+	[delView setCancelButtonIndex:1];
+	[delView show];
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+	if(buttonIndex == [alertView cancelButtonIndex]) {
+		[self release];
+		return;
+	}
+	[self _uninstall];
 }
 
 - (void)alertSheet:(UIActionSheet *)alertSheet buttonClicked:(NSInteger)buttonIndex {
 	NSString *context = [alertSheet context];
 	[alertSheet dismiss];
-	if([context isEqualToString:@"askDelete"]) {
-		if(buttonIndex == 1) {
-			[self _uninstall];
-		} else {
-			[self release];
-		}
-	} else if([context isEqualToString:@"finish"]) {
+	if([context isEqualToString:@"finish"]) {
 		[self finishUninstall];
 	}
 }

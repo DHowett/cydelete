@@ -38,6 +38,7 @@ extern "C" void CyDeleteInitialize();
 - (void)closeBoxClicked_thread:(id)callingThread;
 - (void)closeBoxClicked_finish;
 - (void)askDelete;
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex;
 - (void)alertSheet:(UIActionSheet *)alertSheet buttonClicked:(NSInteger)buttonIndex;
 - (void)_uninstall;
 - (void)uninstall_thread_dpkg:(NSThread *)callingThread;
