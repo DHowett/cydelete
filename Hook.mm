@@ -404,14 +404,14 @@ HOOK(SBIcon, setIsShowingCloseBox$, void, BOOL fp) {
 
 extern "C" void CyDeleteInitialize() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	Class _$SBIcon = objc_getClass("SBIcon");
-	_SBIcon$allowsCloseBox = MSHookMessage(_$SBIcon, @selector(allowsCloseBox), &$SBIcon$allowsCloseBox);
-	_SBIcon$closeBoxClicked$ = MSHookMessage(_$SBIcon, @selector(closeBoxClicked:), &$SBIcon$closeBoxClicked$);
-	_SBIcon$setIsShowingCloseBox$ = MSHookMessage(_$SBIcon, @selector(setIsShowingCloseBox:), &$SBIcon$setIsShowingCloseBox$);
+	Class $SBIcon = objc_getClass("SBIcon");
+	_SBIcon$allowsCloseBox = MSHookMessage($SBIcon, @selector(allowsCloseBox), &$SBIcon$allowsCloseBox);
+	_SBIcon$closeBoxClicked$ = MSHookMessage($SBIcon, @selector(closeBoxClicked:), &$SBIcon$closeBoxClicked$);
+	_SBIcon$setIsShowingCloseBox$ = MSHookMessage($SBIcon, @selector(setIsShowingCloseBox:), &$SBIcon$setIsShowingCloseBox$);
 	initTranslation();
 	
-	Class _$SBApplication = objc_getClass("SBApplication");
-	_SBApplication$deactivated = MSHookMessage(_$SBApplication, @selector(deactivated), &$SBApplication$deactivated);
+	Class $SBApplication = objc_getClass("SBApplication");
+	_SBApplication$deactivated = MSHookMessage($SBApplication, @selector(deactivated), &$SBApplication$deactivated);
 
 	CDUpdatePrefs();
 
