@@ -39,6 +39,8 @@
 			<string>PROTECTED_TITLE</string>
 		</dict>
 		<dict>
+			<key>alternateColors</key>
+			<true/>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
@@ -51,8 +53,11 @@
 			<string>Cydia</string>
 			<key>icon</key>
 			<string>Cydia.png</string>
+			<!--<key>set</key><string>setCydiaProtection:specifier:</string>-->
 		</dict>
 		<dict>
+			<key>alternateColors</key>
+			<true/>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
