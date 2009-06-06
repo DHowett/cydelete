@@ -1,0 +1,4 @@
+#!/bin/bash
+if [[ -e /var/log/CYDELETE.log ]]; then
+	rm -f /var/log/CYDELETE.log
+fi
