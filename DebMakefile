@@ -2,11 +2,17 @@ IP=root@ipod
 
 VERSION=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
 PACKAGE=$(shell grep Package layout/DEBIAN/control | cut -d' ' -f2)
+ARCH=$(shell grep Architecture layout/DEBIAN/control | cut -d' ' -f2)
 
 install:
-	scp $(PACKAGE)_$(VERSION)_iphoneos-arm.deb $(IP):
-	ssh $(IP) dpkg -i $(PACKAGE)_$(VERSION)_iphoneos-arm.deb
-	#ssh $(IP) killall -HUP SpringBoard
+	scp $(PACKAGE)_$(VERSION)_$(ARCH).deb $(IP):
+	ssh $(IP) dpkg -i $(PACKAGE)_$(VERSION)_$(ARCH).deb
+	ssh $(IP) killall -HUP SpringBoard
+
+appinstall:
+	scp $(PACKAGE)_$(VERSION)_$(ARCH).deb $(IP):
+	ssh $(IP) dpkg -i $(PACKAGE)_$(VERSION)_$(ARCH).deb
+	ssh $(IP) su mobile -c uicache
 
 package-pre: all
 	rm -rf _
@@ -14,7 +20,7 @@ package-pre: all
 
 package-build:
 	echo "Installed-Size: $(shell du -ks _ | cut -f 1)" >> _/DEBIAN/control
-	dpkg-deb -b _ $(PACKAGE)_$(VERSION)_iphoneos-arm.deb
+	dpkg-deb -b _ $(PACKAGE)_$(VERSION)_$(ARCH).deb
 
 package-clean:
 	rm -f $(PACKAGE)_*.deb
