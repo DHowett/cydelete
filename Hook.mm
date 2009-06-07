@@ -404,15 +404,15 @@ HOOK(SBIcon, setIsShowingCloseBox$, void, BOOL fp) {
 
 extern "C" void CyDeleteInitialize() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	Class $SBIcon = objc_getClass("SBIcon");
-	_SBIcon$allowsCloseBox = MSHookMessage($SBIcon, @selector(allowsCloseBox), &$SBIcon$allowsCloseBox);
-	_SBIcon$closeBoxClicked$ = MSHookMessage($SBIcon, @selector(closeBoxClicked:), &$SBIcon$closeBoxClicked$);
-	_SBIcon$setIsShowingCloseBox$ = MSHookMessage($SBIcon, @selector(setIsShowingCloseBox:), &$SBIcon$setIsShowingCloseBox$);
-	initTranslation();
+	GET_CLASS(SBIcon);
+	HOOK_MESSAGE(SBIcon, allowsCloseBox);
+	HOOK_MESSAGE_ARGS(SBIcon, closeBoxClicked);
+	HOOK_MESSAGE_ARGS(SBIcon, setIsShowingCloseBox);
 	
-	Class $SBApplication = objc_getClass("SBApplication");
-	_SBApplication$deactivated = MSHookMessage($SBApplication, @selector(deactivated), &$SBApplication$deactivated);
+	GET_CLASS(SBApplication);
+	HOOK_MESSAGE(SBApplication, deactivated);
 
+	initTranslation();
 	CDUpdatePrefs();
 
 	[pool release];
