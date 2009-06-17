@@ -1,10 +1,4 @@
 #import <UIKit/UIKit.h>
-//#import <UIKit/UIWindow.h>
-//#import <UIKit/UIInterface.h>
-//#import <UIKit/UIAlert.h>
-//#import <UIKit/UIScreen.h>
-//#import <UIKit/UIProgressHUD.h>
-//#import <UIKit/UIActivityIndicatorView.h>
 #import <Foundation/Foundation.h>
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBIcon.h>
