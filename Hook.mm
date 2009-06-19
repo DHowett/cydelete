@@ -57,34 +57,8 @@ static int getFreeMemory() {
 	[cache writeToFile:path atomically:YES];
 }
 
-+ (NSInteger)getFinish:(NSString *)text {
-	static NSArray *Finishes_;
-	if(!Finishes_)
-		Finishes_ = [NSArray arrayWithObjects:@"return", @"reopen", @"restart", @"reload", @"reboot", nil];
-	if([text length] > 0)
-		return [Finishes_ indexOfObject:text];
-	else
-		return NSNotFound;
-}
-
-+ (NSString *)getFinishString:(NSInteger)finish {
-	switch(finish) {
-		default:
-		case 0:
-		case 1:
-			return CDLocalizedString(@"PACKAGE_FINISH_OKAY");
-		case 2:
-			return CDLocalizedString(@"PACKAGE_FINISH_RESTART");
-		case 3:
-			//return CDLocalizedString(@"PACKAGE_FINISH_RELOAD");
-		case 4:
-			return CDLocalizedString(@"PACKAGE_FINISH_REBOOT");
-	}
-}
-
 - (id)initWithIcon:(SBIcon *)icon path:(NSString *)path {
 	self = [super init];
-	_finish = -1;
 	_SBIcon = [icon retain];
 	_path = [path retain];
 	_win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -176,14 +150,6 @@ static int getFreeMemory() {
 	[self _uninstall];
 }
 
-- (void)alertSheet:(UIActionSheet *)alertSheet buttonClicked:(NSInteger)buttonIndex {
-	NSString *context = [alertSheet context];
-	[alertSheet dismiss];
-	if([context isEqualToString:@"finish"]) {
-		[self finishUninstall];
-	}
-}
-
 - (void)_uninstall {
 	[self startHUD:CDLocalizedString(@"PACKAGE_UNINSTALLING")];
 	[NSThread detachNewThreadSelector:(_cydiaManaged ? @selector(uninstall_thread_dpkg:) : @selector(uninstall_thread_nondpkg:))
@@ -250,52 +216,9 @@ static int getFreeMemory() {
 		}
 
 		[self killHUD];
-
-		if([body length] > 0) {
-			_finish = [CyDelete getFinish:body];
-			if(_finish != NSNotFound && _finish > 1) {
-				[self notifyFinish];
-			}
-		}
 	}
 
 	[self autorelease];
-}
-
-- (void)notifyFinish {
-	NSString *body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_FINISH_BODY"), [_SBIcon displayName], [CyDelete getFinishString:_finish]];
-	id finishSheet = [[[UIActionSheet alloc]
-			initWithTitle:CDLocalizedString(@"PACKAGE_FINISH_TITLE")
-			buttons:[NSArray arrayWithObjects:[CyDelete getFinishString:_finish], nil]
-			defaultButtonIndex:1
-			delegate:[self retain]
-			context:@"finish"]
-		autorelease];
-	[finishSheet setBodyText:body];
-	[finishSheet popupAlertAnimated:YES];
-}
-
-- (void)finishUninstall {
-	//Class $SpringBoard = objc_getClass("SpringBoard");
-	//SpringBoard *sharedSB = [$SpringBoard sharedInstance];
-	switch(_finish) {
-		default:
-		case 0:
-		case 1:
-			return;
-		case 2:
-			system("/usr/libexec/cydelete/setuid /bin/launchctl stop com.apple.SpringBoard");
-			break;
-		case 3:
-			//[sharedSB relaunchSpringBoard];
-			//system("/usr/libexec/cydelete/setuid /bin/launchctl unload "SpringBoard_"; /usr/libexec/cydelete/setuid /bin/launchctl load "SpringBoard_);
-			//break;
-		case 4:
-			//[sharedSB reboot];
-			system("/usr/libexec/cydelete/setuid /sbin/reboot");
-			break;
-	}
-	return;
 }
 
 - dealloc {

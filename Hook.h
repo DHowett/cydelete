@@ -20,25 +20,19 @@ extern "C" void CyDeleteInitialize();
 	NSString *_path;
 	UIProgressHUD *_hud;
 	UIWindow *_win;
-	NSInteger _finish;
 	bool _cydiaManaged;
 }
 - (void)startHUD:(id)message;
 - (void)killHUD;
-+ (NSInteger)getFinish:(NSString *)text;
-+ (NSString *)getFinishString:(NSInteger)finish;
 - (id)initWithIcon:(SBIcon *)icon path:(NSString *)path;
 - (void)_closeBoxClicked;
 - (void)closeBoxClicked_thread:(id)callingThread;
 - (void)closeBoxClicked_finish;
 - (void)askDelete;
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex;
-- (void)alertSheet:(UIActionSheet *)alertSheet buttonClicked:(NSInteger)buttonIndex;
 - (void)_uninstall;
 - (void)uninstall_thread_dpkg:(NSThread *)callingThread;
 - (void)uninstall_thread_nondpkg:(NSThread *)callingThread;
 - (void)uninstalled:(NSString *)body;
-- (void)notifyFinish;
-- (void)finishUninstall;
 - dealloc;
 @end
