@@ -276,7 +276,7 @@ HOOK(SBIcon, closeBoxClicked$, void, id fp8) {
 	sharedSBApplicationController = [$SBApplicationController sharedInstance];
 	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[self displayIdentifier]];
 
-	if(!app || ![app isSystemApplication]) {
+	if(!app || ![app isSystemApplication] || [[app path] isEqualToString:@"/Applications/Web.app"]) {
 		CALL_ORIG(SBIcon, closeBoxClicked$, fp8);
 		return;
 	}
@@ -319,7 +319,7 @@ HOOK(SBIcon, setIsShowingCloseBox$, void, BOOL fp) {
 	sharedSBApplicationController = [$SBApplicationController sharedInstance];
 	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[self displayIdentifier]];
 
-        if([app isSystemApplication]) {
+        if([app isSystemApplication] && ![[app path] isEqualToString:@"/Applications/Web.app"]) {
 		[cb setImage:safariCloseBox forState:0];
 		[cb setImage:safariCloseBox forState:1];
 	}
