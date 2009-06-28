@@ -15,3 +15,13 @@
 
 #define HOOK_MESSAGE_ARGS(class, sel) \
 	_ ## class ## $ ## sel ## $ = MSHookMessage($ ## class, @selector(sel:), &$ ## class ## $ ## sel ## $) 
+
+static inline SEL __getsel(const char *in) {
+	int len = strlen(in) + 1;
+	char selector[len];
+	for(int i = 0; i < len; i++)
+		selector[i] = (in[i] == '$' ? ':' : in[i]);
+	return sel_getUid(selector);
+}
+#define HOOK_MESSAGE_EX(class, sel) \
+	_ ## class ## $ ## sel = MSHookMessage($ ## class, __getsel(#sel), &$ ## class ## $ ## sel)
