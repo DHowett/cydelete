@@ -266,7 +266,8 @@ HOOK(SBIcon, allowsCloseBox, BOOL) {
 	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
 	|| [bundle hasPrefix:@"com.bigboss.categories."]
 	|| ([bundle isEqualToString:@"com.ripdev.icy"] && CDGetBoolPref(@"CDProtectIcy", false))
-	|| [bundle hasPrefix:@"jp.ashikase.springjumps."])
+	|| [bundle hasPrefix:@"jp.ashikase.springjumps."]
+	|| [bundle hasPrefix:@"com.steventroughtonsmith.stack"])
 		return NO;
 	else return YES;
 }
