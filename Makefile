@@ -2,47 +2,32 @@ CC=/opt/iphone-sdk/bin/arm-apple-darwin9-g++
 
 BUNDLEDIR=/Library/MobileSubstrate/DynamicLibraries
 BUNDLENAME=CyDelete.bundle
-VERSION=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
+VERSION:=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
 
-LDFLAGS=-lobjc -framework Foundation -framework UIKit -framework CoreFoundation \
-	-multiply_defined suppress -dynamiclib -init _CyDeleteInitialize -Wall \
-	-Werror -lsubstrate -lobjc -ObjC++ -fobjc-exceptions -fobjc-call-cxx-cdtors #-ggdb
+CFLAGS=-DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\"" -DVERSION="$(VERSION)" -O2
 
-CFLAGS=-dynamiclib -DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\"" -DVERSION="$(VERSION)"#-ggdb
+tweak=CyDelete
+subdirs=CyDeleteSettings.bundle
+include /home/dustin/framework/itouch/makefiles/MSMakefile
 
-OFILES=Hook.o
-
-TARGET=CyDelete.dylib
-
-all: $(TARGET) setuid
-	@(cd CyDeleteSettings.bundle; $(MAKE) $(MFLAGS) all)
-
-include DebMakefile
+project-all: setuid
 
 setuid:
 	/opt/iphone-sdk/bin/arm-apple-darwin9-gcc -o setuid setuid.c
 	/opt/iphone-sdk/bin/arm-apple-darwin9-strip -x setuid
 	CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
 
-$(TARGET): $(OFILES)
-	$(CC) $(LDFLAGS) -o $@ $^
-	/opt/iphone-sdk/bin/arm-apple-darwin9-strip -x $@
-	CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
+project-clean:
+	rm -f setuid
 
-%.o: %.mm
-	$(CC) -c $(CFLAGS) $< -o $@
-
-clean:
-	rm -f *.o $(TARGET) setuid
-	@(cd CyDeleteSettings.bundle; $(MAKE) $(MFLAGS) clean)
-
-package-local:
-	cp $(TARGET) _/Library/MobileSubstrate/DynamicLibraries
+project-package-local:
 	cp CyDeleteSettings.bundle/CyDeleteSettings _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/
 	cp setuid _/usr/libexec/cydelete
 	rm _$(BUNDLEDIR)/$(BUNDLENAME)/convert.sh
 	sed -i "s/VERSION/$(VERSION)/g" _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/Info.plist
 	sed -i "s/VERSION/$(VERSION)/g" _/Library/MobileSubstrate/DynamicLibraries/CyDelete.bundle/Info.plist
-	chown 0.80 _ -R
-	chmod 6755 _/usr/libexec/cydelete/setuid
 
+project-package-post:
+	chmod 6755 _/usr/libexec/cydelete/setuid
+	-find _ -iname '*.plist' -print0 | xargs -0 /home/dustin/bin/plutil -convert binary1
+	-find _ -iname '*.strings' -print0 | xargs -0 /home/dustin/bin/plutil -convert binary1
