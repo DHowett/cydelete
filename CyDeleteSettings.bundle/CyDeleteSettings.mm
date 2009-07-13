@@ -15,24 +15,24 @@
 }
 
 - (id)specifiers {
-	NSArray *s = [self loadSpecifiersFromPlistName:@"CyDelete" target:self];
+	NSArray *specifiers = [self loadSpecifiersFromPlistName:@"CyDelete" target:self];
 	int i;
-	for(i=0; i<[s count]; i++) {
-		id curObj = [s objectAtIndex:i];
-		id name = [curObj name];
+	for(PSSpecifier *curSpec in specifiers) {
+		NSString *name = [curSpec name];
 		if(name) {
-			[curObj setName:[[self bundle] localizedStringForKey:name value:name table:nil]];
+			[curSpec setName:[[self bundle] localizedStringForKey:name value:name table:nil]];
 		}
-		id titleDict = [curObj titleDictionary];
+		id titleDict = [curSpec titleDictionary];
 		if(titleDict) {
 			NSMutableDictionary *newTitles = [[NSMutableDictionary alloc] init];
 			for(NSString *key in titleDict) {
-				[newTitles setObject: [[self bundle] localizedStringForKey:[titleDict objectForKey:key] value:[titleDict objectForKey:key] table:nil] forKey: key];
+				NSString *value = [titleDict objectForKey:key];
+				[newTitles setObject:[[self bundle] localizedStringForKey:value value:value table:nil] forKey: key];
 			}
-			[curObj setTitleDictionary: [newTitles autorelease]];
+			[curSpec setTitleDictionary: [newTitles autorelease]];
 		}
 	}
-	return s;
+	return specifiers;
 }
 
 - (id)donationButton:(id)arg {
