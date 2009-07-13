@@ -1,5 +1,3 @@
-CC=/opt/iphone-sdk/bin/arm-apple-darwin9-g++
-
 BUNDLEDIR=/Library/MobileSubstrate/DynamicLibraries
 BUNDLENAME=CyDelete.bundle
 VERSION:=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
@@ -13,9 +11,9 @@ include /home/dustin/framework/itouch/makefiles/MSMakefile
 project-all: setuid
 
 setuid:
-	/opt/iphone-sdk/bin/arm-apple-darwin9-gcc -o setuid setuid.c
-	/opt/iphone-sdk/bin/arm-apple-darwin9-strip -x setuid
-	CODESIGN_ALLOCATE=/opt/iphone-sdk/bin/arm-apple-darwin9-codesign_allocate ldid -S $@
+	$(CC) -o setuid setuid.c
+	$(STRIP) -x setuid
+	CODESIGN_ALLOCATE=$(CODESIGN_ALLOCATE) ldid -S $@
 
 project-clean:
 	rm -f setuid
