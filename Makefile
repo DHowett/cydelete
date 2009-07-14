@@ -2,16 +2,16 @@ BUNDLEDIR=/Library/MobileSubstrate/DynamicLibraries
 BUNDLENAME=CyDelete.bundle
 VERSION:=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
 
-CFLAGS=-DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\"" -DVERSION="$(VERSION)" -O2
+CFLAGS:=-DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\"" -DVERSION="$(VERSION)"
 
-tweak=CyDelete
-subdirs=CyDeleteSettings.bundle
+tweak:=CyDelete
+subdirs:=CyDeleteSettings.bundle
 include /home/dustin/framework/itouch/makefiles/MSMakefile
 
 project-all: setuid
 
 setuid:
-	$(CC) -o setuid setuid.c
+	$(CC) $(CFLAGS) -o setuid setuid.c
 	$(STRIP) -x setuid
 	CODESIGN_ALLOCATE=$(CODESIGN_ALLOCATE) ldid -S $@
 
