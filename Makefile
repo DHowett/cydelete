@@ -4,9 +4,12 @@ VERSION:=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
 
 CFLAGS:=-DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\"" -DVERSION="$(VERSION)"
 
+PWD:=$(shell pwd)
+TOP_DIR:=$(PWD)
+FRAMEWORKDIR=$(TOP_DIR)/framework
 tweak:=CyDelete
 subdirs:=CyDeleteSettings.bundle
-include /home/dustin/framework/itouch/makefiles/MSMakefile
+include $(FRAMEWORKDIR)/makefiles/MSMakefile
 
 project-all: setuid
 

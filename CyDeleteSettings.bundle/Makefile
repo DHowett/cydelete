@@ -5,7 +5,7 @@ LDFLAGS=-lobjc -framework Foundation -framework UIKit -framework CoreFoundation 
 all: CyDeleteSettings
 
 CyDeleteSettings: CyDeleteSettings.o
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^ $(FRAMEWORKDIR)/lib/DHLocalizedListController.o
 	$(STRIP) -x $@
 	CODESIGN_ALLOCATE=$(CODESIGN_ALLOCATE) ldid -S $@
 

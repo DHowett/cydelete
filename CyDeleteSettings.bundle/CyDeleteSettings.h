@@ -1,12 +1,8 @@
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-#import <Preferences/PSListController.h>
-#import <Preferences/PSSpecifier.h>
+#import <DHLocalizedListController.h>
 
-@interface CyDeleteSettingsController : PSListController {
+@interface CyDeleteSettingsController : DHLocalizedListController {
 	bool _cydiaPresent;
 	bool _icyPresent;
 }
-- (id)navigationTitle;
 - (id)specifiers;
 @end

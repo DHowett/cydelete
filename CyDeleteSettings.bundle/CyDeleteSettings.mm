@@ -2,10 +2,6 @@
 
 @implementation CyDeleteSettingsController
 
-- (id)navigationTitle {
-	return [[self bundle] localizedStringForKey:_title value:_title table:nil];
-}
-
 - (void)viewDidBecomeVisible {
 	NSFileManager *manager = [NSFileManager defaultManager];
 	_cydiaPresent = [manager fileExistsAtPath:@"/Applications/Cydia.app/Info.plist"];
@@ -15,24 +11,7 @@
 }
 
 - (id)specifiers {
-	NSArray *specifiers = [self loadSpecifiersFromPlistName:@"CyDelete" target:self];
-	int i;
-	for(PSSpecifier *curSpec in specifiers) {
-		NSString *name = [curSpec name];
-		if(name) {
-			[curSpec setName:[[self bundle] localizedStringForKey:name value:name table:nil]];
-		}
-		id titleDict = [curSpec titleDictionary];
-		if(titleDict) {
-			NSMutableDictionary *newTitles = [[NSMutableDictionary alloc] init];
-			for(NSString *key in titleDict) {
-				NSString *value = [titleDict objectForKey:key];
-				[newTitles setObject:[[self bundle] localizedStringForKey:value value:value table:nil] forKey: key];
-			}
-			[curSpec setTitleDictionary: [newTitles autorelease]];
-		}
-	}
-	return specifiers;
+	return [self localizedSpecifiersWithSpecifiers:[self loadSpecifiersFromPlistName:@"CyDelete" target:self]];
 }
 
 - (id)donationButton:(id)arg {

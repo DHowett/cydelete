@@ -7,7 +7,7 @@
 #import <SpringBoard/SBApplicationController.h>
 #import <SpringBoard/SBApplication.h>
 #import <objc/runtime.h>
-#import "Common.h"
+#import <DHHookCommon.h>
 
 NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd);
 static void CDUpdatePrefs();
