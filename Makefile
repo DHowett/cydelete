@@ -29,6 +29,7 @@ project-package-local:
 	sed -i "s/VERSION/$(VERSION)/g" _/Library/MobileSubstrate/DynamicLibraries/CyDelete.bundle/Info.plist
 
 project-package-post:
-	chmod 6755 _/usr/libexec/cydelete/setuid
 	-find _ -iname '*.plist' -print0 | xargs -0 /home/dustin/bin/plutil -convert binary1
 	-find _ -iname '*.strings' -print0 | xargs -0 /home/dustin/bin/plutil -convert binary1
+	$(FAKEROOT) chown 0:80 _ -R
+	$(FAKEROOT) chmod 6755 _/usr/libexec/cydelete/setuid
