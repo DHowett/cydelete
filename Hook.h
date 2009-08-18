@@ -1,12 +1,9 @@
-#import <UIKit/UIKit.h>
-#import <Foundation/Foundation.h>
-#import <SpringBoard/SpringBoard.h>
+#import <UIKit/UIProgressHUD.h>
 #import <SpringBoard/SBIcon.h>
 #import <SpringBoard/SBIconController.h>
 #import <SpringBoard/SBIconModel.h>
 #import <SpringBoard/SBApplicationController.h>
 #import <SpringBoard/SBApplication.h>
-#import <objc/runtime.h>
 #import <DHHookCommon.h>
 
 NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd);

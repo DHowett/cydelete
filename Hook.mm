@@ -106,10 +106,10 @@ static int getFreeMemory() {
 
 		NSString *body = [[NSString alloc] initWithFormat:CDLocalizedString(@"PACKAGE_NOT_CYDIA_BODY"), [_SBIcon displayName]];
 		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:CDLocalizedString(@"PACKAGE_NOT_CYDIA_TITLE")
-								message:body
-								delegate:nil
-								cancelButtonTitle:@"OK"
-								otherButtonTitles:nil];
+								       message:body
+								      delegate:nil
+							     cancelButtonTitle:@"OK"
+							     otherButtonTitles:nil];
 		[body release];
 		[alertUnknown show];
 		[alertUnknown release];
@@ -330,8 +330,8 @@ extern "C" void CyDeleteInitialize() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	GET_CLASS(SBIcon);
 	HOOK_MESSAGE(SBIcon, allowsCloseBox);
-	HOOK_MESSAGE_ARGS(SBIcon, closeBoxClicked);
-	HOOK_MESSAGE_ARGS(SBIcon, setIsShowingCloseBox);
+	HOOK_MESSAGE_REPLACEMENT(SBIcon, closeBoxClicked:, closeBoxClicked$);
+	HOOK_MESSAGE_REPLACEMENT(SBIcon, setIsShowingCloseBox:, setIsShowingCloseBox$);
 	
 	GET_CLASS(SBApplication);
 	HOOK_MESSAGE(SBApplication, deactivated);
