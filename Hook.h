@@ -31,5 +31,5 @@ extern "C" void CyDeleteInitialize();
 - (void)uninstall_thread_dpkg:(NSThread *)callingThread;
 - (void)uninstall_thread_nondpkg:(NSThread *)callingThread;
 - (void)uninstalled:(NSString *)body;
-- dealloc;
+- (void)dealloc;
 @end

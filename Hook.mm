@@ -221,7 +221,7 @@ static int getFreeMemory() {
 	[self autorelease];
 }
 
-- dealloc {
+- (void)dealloc {
 	[self killHUD];
 	[_hud release];
 	[_win release];
