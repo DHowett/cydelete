@@ -1,7 +1,46 @@
-#import "Hook.h"
+#import <UIKit/UIProgressHUD.h>
+#import <SpringBoard/SBIcon.h>
+#import <SpringBoard/SBIconController.h>
+#import <SpringBoard/SBIconModel.h>
+#import <SpringBoard/SBApplicationController.h>
+#import <SpringBoard/SBApplication.h>
+#import <DHHookCommon.h>
 #import <mach/mach_host.h>
 
+NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd);
+static void CDUpdatePrefs();
+
+@interface CyDelete : NSObject {
+	NSAutoreleasePool *_pool;
+	SBIcon *_SBIcon;
+	NSString *_pkgName;
+	NSString *_path;
+	UIProgressHUD *_hud;
+	UIWindow *_win;
+	bool _cydiaManaged;
+}
+- (void)startHUD:(id)message;
+- (void)killHUD;
+- (id)initWithIcon:(SBIcon *)icon path:(NSString *)path;
+- (void)_closeBoxClicked;
+- (void)closeBoxClicked_thread:(id)callingThread;
+- (void)closeBoxClicked_finish;
+- (void)askDelete;
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex;
+- (void)_uninstall;
+- (void)uninstall_thread_dpkg:(NSThread *)callingThread;
+- (void)uninstall_thread_nondpkg:(NSThread *)callingThread;
+- (void)uninstalled:(NSString *)body;
+- (void)dealloc;
+@end
+
 #define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
+
+DHDeclareClass(SBIcon);
+DHDeclareClass(SBIconModel);
+DHDeclareClass(SBIconController);
+DHDeclareClass(SBApplication);
+DHDeclareClass(SBApplicationController);
 
 static SBApplicationController *sharedSBApplicationController = nil;
 static NSBundle *cyDelBundle = nil;
@@ -189,15 +228,13 @@ static int getFreeMemory() {
 		[sharedSBApplicationController removeApplicationsFromModelWithBundleIdentifier:bundle];
 
 		/* Uninstall the icon with the cool "winking out of existence" animation! */
-		Class $SBIconController = objc_getClass("SBIconController");
-		id sharedSBIconController = [$SBIconController sharedInstance];
+		id sharedSBIconController = [DHClass(SBIconController) sharedInstance];
 		[sharedSBIconController uninstallIcon:_SBIcon animate:YES];
 
 		[self removeFromMIList:bundle];
 
 		if([bundle isEqualToString:@"jp.ashikase.springjumps"]) {
-			Class $SBIconModel = objc_getClass("SBIconModel");
-			id sharedSBIconModel = [$SBIconModel sharedInstance];
+			id sharedSBIconModel = [DHClass(SBIconModel) sharedInstance];
 
 			NSArray *allBundles = [sharedSBApplicationController allApplications];
 			int i = 0;
@@ -273,8 +310,7 @@ HOOK(SBIcon, allowsCloseBox, BOOL) {
 }
 
 HOOK(SBIcon, closeBoxClicked$, void, id fp8) {
-	Class $SBApplicationController = objc_getClass("SBApplicationController");
-	sharedSBApplicationController = [$SBApplicationController sharedInstance];
+	sharedSBApplicationController = [DHClass(SBApplicationController) sharedInstance];
 	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[self displayIdentifier]];
 
 	if(!app || ![app isSystemApplication] || [[app path] isEqualToString:@"/Applications/Web.app"]) {
@@ -314,10 +350,9 @@ HOOK(SBIcon, setIsShowingCloseBox$, void, BOOL fp) {
 	if(fp == NO) return;
 
 	UIPushButton *cb;
-	object_getInstanceVariable(self, "_closeBox", reinterpret_cast<void**>(&cb));
+	cb = MSHookIvar<UIPushButton *>(self, "_closeBox");
 
-	Class $SBApplicationController = objc_getClass("SBApplicationController");
-	sharedSBApplicationController = [$SBApplicationController sharedInstance];
+	sharedSBApplicationController = [DHClass(SBApplicationController) sharedInstance];
 	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[self displayIdentifier]];
 
         if([app isSystemApplication] && ![[app path] isEqualToString:@"/Applications/Web.app"]) {
@@ -326,18 +361,20 @@ HOOK(SBIcon, setIsShowingCloseBox$, void, BOOL fp) {
 	}
 }
 
-extern "C" void CyDeleteInitialize() {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	GET_CLASS(SBIcon);
+static _Constructor void CyDeleteInitialize() {
+	DHScopedAutoreleasePool();
+
+	DHLoadLateClass(SBIcon);
+	DHLoadLateClass(SBIconController);
+	DHLoadLateClass(SBIconModel);
+	DHLoadLateClass(SBApplication);
+	DHLoadLateClass(SBApplicationController);
+
 	HOOK_MESSAGE(SBIcon, allowsCloseBox);
-	HOOK_MESSAGE_REPLACEMENT(SBIcon, closeBoxClicked:, closeBoxClicked$);
-	HOOK_MESSAGE_REPLACEMENT(SBIcon, setIsShowingCloseBox:, setIsShowingCloseBox$);
-	
-	GET_CLASS(SBApplication);
+	HOOK_MESSAGE_AUTO(SBIcon, closeBoxClicked$);
+	HOOK_MESSAGE_AUTO(SBIcon, setIsShowingCloseBox$);
 	HOOK_MESSAGE(SBApplication, deactivated);
 
 	initTranslation();
 	CDUpdatePrefs();
-
-	[pool release];
 }

@@ -2,6 +2,7 @@ BUNDLEDIR=/Library/MobileSubstrate/DynamicLibraries
 BUNDLENAME=CyDelete.bundle
 VERSION:=$(shell grep Version layout/DEBIAN/control | cut -d' ' -f2)
 
+LDFLAGS:=-framework UIKit
 CFLAGS:=-DBUNDLE="@\"$(BUNDLEDIR)/$(BUNDLENAME)\"" -DVERSION="$(VERSION)"
 
 PWD:=$(shell pwd)
