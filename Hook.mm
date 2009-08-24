@@ -36,11 +36,11 @@ static void CDUpdatePrefs();
 
 #define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
 
-DHDeclareClass(SBIcon);
-DHDeclareClass(SBIconModel);
-DHDeclareClass(SBIconController);
-DHDeclareClass(SBApplication);
-DHDeclareClass(SBApplicationController);
+DHLateClass(SBIcon);
+DHLateClass(SBIconModel);
+DHLateClass(SBIconController);
+DHLateClass(SBApplication);
+DHLateClass(SBApplicationController);
 
 static SBApplicationController *sharedSBApplicationController = nil;
 static NSBundle *cyDelBundle = nil;
@@ -363,12 +363,6 @@ HOOK(SBIcon, setIsShowingCloseBox$, void, BOOL fp) {
 
 static _Constructor void CyDeleteInitialize() {
 	DHScopedAutoreleasePool();
-
-	DHLoadLateClass(SBIcon);
-	DHLoadLateClass(SBIconController);
-	DHLoadLateClass(SBIconModel);
-	DHLoadLateClass(SBApplication);
-	DHLoadLateClass(SBApplicationController);
 
 	HOOK_MESSAGE(SBIcon, allowsCloseBox);
 	HOOK_MESSAGE_AUTO(SBIcon, closeBoxClicked$);
