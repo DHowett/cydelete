@@ -24,7 +24,6 @@ static void CDUpdatePrefs();
 - (void)killHUD;
 - (id)initWithIcon:(SBIcon *)icon path:(NSString *)path;
 - (void)_closeBoxClicked;
-- (void)closeBoxClicked_thread:(id)callingThread;
 - (void)closeBoxClicked_finish;
 - (void)askDelete;
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex;
@@ -156,19 +155,11 @@ static char *owner(const char *_bundle, const char *_title, const char *_path) {
 		[self askDelete];
 		return;
 	}
-	[self startHUD:CDLocalizedString(@"PACKAGE_SEARCHING")];
-	[NSThread detachNewThreadSelector:@selector(closeBoxClicked_thread:) toTarget:self withObject:[NSThread currentThread]];
-}
-
-- (void)closeBoxClicked_thread:(id)callingThread {
-	id pool = [[NSAutoreleasePool alloc] init];
-	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
-	NSString *bundle = [[app bundle] bundleIdentifier];
+	//[self startHUD:CDLocalizedString(@"PACKAGE_SEARCHING")];
+	//[NSThread detachNewThreadSelector:@selector(closeBoxClicked_thread:) toTarget:self withObject:[NSThread currentThread]];
 	NSString *title = [app displayName];
 	_pkgName = [[NSString stringWithUTF8String:owner([bundle UTF8String], [title UTF8String], [[NSString stringWithFormat:@"%@/Info.plist", _path] UTF8String])] retain];
-	[self killHUD];
-	[self performSelector:@selector(closeBoxClicked_finish) onThread:callingThread withObject:nil waitUntilDone:YES];
-	[pool drain];
+	[self closeBoxClicked_finish];
 }
 
 - (void)closeBoxClicked_finish {
