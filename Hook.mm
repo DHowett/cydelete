@@ -6,6 +6,7 @@
 #import <SpringBoard/SBApplication.h>
 #import <DHHookCommon.h>
 #import <mach/mach_host.h>
+#import <dirent.h>
 
 NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd);
 static void CDUpdatePrefs();
@@ -72,6 +73,46 @@ static int getFreeMemory() {
 	return (availMem * pageSize) / 1024 / 1024;
 }
 
+#define fexists(n) access(n, F_OK)
+static char *owner(const char *_bundle, const char *_title, const char *_path) {
+	char bundle[1024], title[1024];
+	static char pkgname[256];
+	int pathlen = strlen(_path);
+
+	snprintf(bundle, 1024, "/var/lib/dpkg/info/%s.list", _bundle);
+	snprintf(title, 1024, "/var/lib/dpkg/info/%s.list", _title);
+	if(fexists(bundle) == 0) {
+		strcpy(pkgname, _bundle);
+		return pkgname;
+	} else if(fexists(title) == 0) {
+		strcpy(pkgname, _title);
+		return pkgname;
+	}
+
+	DIR *d = opendir("/var/lib/dpkg/info");
+	struct dirent *ent;
+	while((ent = readdir(d)) != NULL) {
+		int namelen = strlen(ent->d_name);
+		if(strcmp(ent->d_name + namelen - 5, ".list") != 0) continue;
+		char curpath[1024];
+		snprintf(curpath, 1024, "/var/lib/dpkg/info/%s", ent->d_name);
+		FILE *fp = fopen(curpath, "r");
+		char curfn[1024];
+		while(fgets(curfn, 1024, fp) != NULL) {
+			if(strncmp(_path, curfn, pathlen) == 0) {
+				strncpy(pkgname, ent->d_name, namelen - 5);
+				pkgname[namelen - 5] = '\0';
+				fclose(fp);
+				closedir(d);
+				return pkgname;
+			}
+		}
+		fclose(fp);
+	}
+	closedir(d);
+	return NULL;
+}
+
 @implementation CyDelete
 
 - (void)startHUD:(id)message {
@@ -124,10 +165,8 @@ static int getFreeMemory() {
 	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
 	NSString *bundle = [[app bundle] bundleIdentifier];
 	NSString *title = [app displayName];
-	NSString *dpkgCmd = [NSString stringWithFormat:@"/usr/libexec/cydelete/owner.sh \"%@\" \"%@\" \"%@/Info.plist\"", bundle, title, _path];
-	NSMutableString *dpkgOutput =  __CyDelete_outputForShellCommand(dpkgCmd);
+	_pkgName = [[NSString stringWithUTF8String:owner([bundle UTF8String], [title UTF8String], [[NSString stringWithFormat:@"%@/Info.plist", _path] UTF8String])] retain];
 	[self killHUD];
-	_pkgName = [dpkgOutput copy];
 	[self performSelector:@selector(closeBoxClicked_finish) onThread:callingThread withObject:nil waitUntilDone:YES];
 	[pool drain];
 }
