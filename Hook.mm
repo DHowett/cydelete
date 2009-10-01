@@ -158,7 +158,8 @@ static char *owner(const char *_bundle, const char *_title, const char *_path) {
 	//[self startHUD:CDLocalizedString(@"PACKAGE_SEARCHING")];
 	//[NSThread detachNewThreadSelector:@selector(closeBoxClicked_thread:) toTarget:self withObject:[NSThread currentThread]];
 	NSString *title = [app displayName];
-	_pkgName = [[NSString stringWithUTF8String:owner([bundle UTF8String], [title UTF8String], [[NSString stringWithFormat:@"%@/Info.plist", _path] UTF8String])] retain];
+	char *pkgNameC = owner([bundle UTF8String], [title UTF8String], [[NSString stringWithFormat:@"%@/Info.plist", _path] UTF8String]);
+	_pkgName = pkgNameC ? [[NSString stringWithUTF8String:pkgNameC] retain] : nil;
 	[self closeBoxClicked_finish];
 }
 
