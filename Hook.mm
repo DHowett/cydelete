@@ -368,11 +368,11 @@ HOOK(SBApplication, deactivated, void) {
 }
 
 static void CDUpdatePrefs() {
-	NSDictionary *prefs = [[NSDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/net.howett.cydelete.plist"];
+	NSDictionary *prefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/net.howett.cydelete.plist"];
 	if(!prefs) return;
 	if(!cyDelPrefs || ![cyDelPrefs isEqualToDictionary:prefs]) {
 		[cyDelPrefs release];
-		cyDelPrefs = prefs;
+		cyDelPrefs = [prefs retain];
 	}
 }
 
