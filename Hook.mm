@@ -1,5 +1,6 @@
 #import <UIKit/UIProgressHUD.h>
 #import <SpringBoard/SBIcon.h>
+#import <SpringBoard/SBApplicationIcon.h>
 #import <SpringBoard/SBIconController.h>
 #import <SpringBoard/SBIconModel.h>
 #import <SpringBoard/SBApplicationController.h>
@@ -8,47 +9,45 @@
 #import <mach/mach_host.h>
 #import <dirent.h>
 
-NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd);
+__attribute__((unused)) static NSMutableString *outputForShellCommand(NSString *cmd);
+static void removeBundleFromMIList(NSString *bundle);
 static void CDUpdatePrefs();
 
-@interface CyDelete : NSObject {
-	NSAutoreleasePool *_pool;
-	SBIcon *_SBIcon;
-	NSString *_pkgName;
-	NSString *_path;
-	UIProgressHUD *_hud;
-	UIWindow *_win;
-	bool _cydiaManaged;
-}
-- (void)startHUD:(id)message;
-- (void)killHUD;
-- (id)initWithIcon:(SBIcon *)icon path:(NSString *)path;
-- (void)_closeBoxClicked;
-- (void)closeBoxClicked_finish;
-- (void)askDelete;
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex;
-- (void)_uninstall;
-- (void)uninstall_thread_dpkg:(NSThread *)callingThread;
-- (void)uninstall_thread_nondpkg:(NSThread *)callingThread;
-- (void)uninstalled:(NSString *)body;
-- (void)dealloc;
-@end
-
-#define SpringBoard_ "/System/Library/LaunchDaemons/com.apple.SpringBoard.plist"
-
 DHLateClass(SBIcon);
+DHLateClass(SBApplicationIcon);
 DHLateClass(SBIconModel);
 DHLateClass(SBIconController);
 DHLateClass(SBApplication);
 DHLateClass(SBApplicationController);
 
-static SBApplicationController *sharedSBApplicationController = nil;
 static NSBundle *cyDelBundle = nil;
 static NSDictionary *cyDelPrefs = nil;
+static CFMutableDictionaryRef iconPackagesDict;
+static NSOperationQueue *uninstallQueue;
 static UIImage *safariCloseBox = nil;
 
 #define SBLocalizedString(key) [[NSBundle mainBundle] localizedStringForKey:key value:@"None" table:@"SpringBoard"]
 #define CDLocalizedString(key) [cyDelBundle localizedStringForKey:key value:key table:nil]
+
+@interface CDUninstallOperation : NSOperation {
+	BOOL _executing;
+	BOOL _finished;
+}
+@end
+
+@interface CDUninstallDpkgOperation : CDUninstallOperation {
+	NSString *_package;
+}
+@property (nonatomic, assign) NSString *package;
+- (id)initWithPackage:(NSString *)package;
+@end
+
+@interface CDUninstallDeleteOperation : CDUninstallOperation {
+	NSString *_path;
+}
+@property (nonatomic, assign) NSString *path;
+- (id)initWithPath:(NSString *)path;
+@end
 
 static void initTranslation() {
 	cyDelBundle = [[NSBundle bundleWithPath:BUNDLE] retain];
@@ -62,7 +61,7 @@ static bool CDGetBoolPref(id key, bool value) {
 }
 
 // Thanks _BigBoss_!
-static int getFreeMemory() {
+__attribute__((unused)) static int getFreeMemory() {
 	vm_size_t pageSize;
 	host_page_size(mach_host_self(), &pageSize);
 	struct vm_statistics vmStats;
@@ -112,23 +111,88 @@ static char *owner(const char *_bundle, const char *_title, const char *_path) {
 	return NULL;
 }
 
-@implementation CyDelete
-
-- (void)startHUD:(id)message {
-	[_hud setText:message];
-	[_hud show:YES];
-	[_win makeKeyAndVisible];
-	[_win addSubview:_hud];
+@implementation CDUninstallOperation
+- (id)init {
+	if((self = [super init]) != nil) {
+		_executing = NO;
+		_finished = NO;
+	}
+	return self;
 }
 
-- (void)killHUD {
-	[_hud show:NO];
-	[_hud removeFromSuperview];
-	[_win resignKeyWindow];
-	[_win setHidden:YES];
+- (BOOL)isConcurrent { return YES; }
+- (BOOL)isExecuting { return _executing; }
+- (BOOL)isFinished { return _finished; }
+
+- (void)start {
+	if([self isCancelled]) {
+		[self willChangeValueForKey:@"isFinished"];
+		_finished = YES;
+		[self didChangeValueForKey:@"isFinished"];
+		return;
+	}
+	[self willChangeValueForKey:@"isExecuting"];
+	[NSThread detachNewThreadSelector:@selector(main) toTarget:self withObject:nil];
+	_executing = YES;
+	[self didChangeValueForKey:@"isExecuting"];
 }
 
-- (void)removeFromMIList:(NSString *)bundle {
+- (void)completeOperation {
+	[self willChangeValueForKey:@"isFinished"];
+	[self willChangeValueForKey:@"isExecuting"];
+	_executing = NO;
+	_finished = YES;
+	[self didChangeValueForKey:@"isExecuting"];
+	[self didChangeValueForKey:@"isFinished"];
+}
+
+- (void)main {
+}
+@end
+
+@implementation CDUninstallDeleteOperation
+@synthesize path = _path;
+- (id)initWithPath:(NSString *)path {
+	if((self = [super init]) != nil) {
+		self.path = path;
+	}
+	return self;
+}
+
+- (void)main {
+	DHScopedAutoreleasePool();
+	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_nondpkg.sh %@", _path];
+	system([command UTF8String]);
+	[self completeOperation];
+}
+@end
+
+@implementation CDUninstallDpkgOperation
+@synthesize package = _package;
+- (id)initWithPackage:(NSString *)package {
+	if((self = [super init]) != nil) {
+		self.package = package;
+	}
+	return self;
+}
+
+- (void)displayError {
+	NSString *body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_UNINSTALL_ERROR_BODY"), _package];
+	UIAlertView *delView = [[UIAlertView alloc] initWithTitle:CDLocalizedString(@"PACKAGE_UNINSTALL_ERROR_TITLE") message:body delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
+	[delView show];
+	[delView release];
+}
+
+- (void)main {
+	DHScopedAutoreleasePool();
+	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_dpkg.sh %@", _package];
+	NSString *output = outputForShellCommand(command);
+	if(!output) [self performSelectorOnMainThread:@selector(displayError) withObject:nil waitUntilDone:NO];
+	[self completeOperation];
+}
+@end
+
+static void removeBundleFromMIList(NSString *bundle) {
 	NSString *path([NSString stringWithFormat:@"%@/Library/Caches/com.apple.mobile.installation.plist", NSHomeDirectory()]);
 	NSMutableDictionary *cache = [[NSMutableDictionary alloc] initWithContentsOfFile:path];
 	[cache autorelease];
@@ -136,172 +200,7 @@ static char *owner(const char *_bundle, const char *_title, const char *_path) {
 	[cache writeToFile:path atomically:YES];
 }
 
-- (id)initWithIcon:(SBIcon *)icon path:(NSString *)path {
-	self = [super init];
-	_SBIcon = [icon retain];
-	_path = [path retain];
-	_win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-	_hud = [[UIProgressHUD alloc] initWithWindow:_win];
-	return self;
-}
-
-- (void)_closeBoxClicked {
-	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
-	NSString *bundle = [[app bundle] bundleIdentifier];
-	if([bundle isEqualToString:@"com.ripdev.Installer"]
-	   || [bundle isEqualToString:@"com.ripdev.install"]) {
-		// If we're dealing with Installer, short circuit over the package search. 
-		_cydiaManaged = false;
-		[self askDelete];
-		return;
-	}
-	//[self startHUD:CDLocalizedString(@"PACKAGE_SEARCHING")];
-	//[NSThread detachNewThreadSelector:@selector(closeBoxClicked_thread:) toTarget:self withObject:[NSThread currentThread]];
-	NSString *title = [app displayName];
-	char *pkgNameC = owner([bundle UTF8String], [title UTF8String], [[NSString stringWithFormat:@"%@/Info.plist", _path] UTF8String]);
-	_pkgName = pkgNameC ? [[NSString stringWithUTF8String:pkgNameC] retain] : nil;
-	[self closeBoxClicked_finish];
-}
-
-- (void)closeBoxClicked_finish {
-	if(!_pkgName && !CDGetBoolPref(@"CDNonCydiaDelete", false)) {
-		// Specialcase Icy if installed outside Cydia.
-		id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
-		NSString *bundle = [[app bundle] bundleIdentifier];
-		if([bundle isEqualToString:@"com.ripdev.icy"]) {
-			_cydiaManaged = false;
-			[self askDelete];
-			return;
-		}
-
-		NSString *body = [[NSString alloc] initWithFormat:CDLocalizedString(@"PACKAGE_NOT_CYDIA_BODY"), [_SBIcon displayName]];
-		UIAlertView *alertUnknown = [[UIAlertView alloc] initWithTitle:CDLocalizedString(@"PACKAGE_NOT_CYDIA_TITLE")
-								       message:body
-								      delegate:nil
-							     cancelButtonTitle:@"OK"
-							     otherButtonTitles:nil];
-		[body release];
-		[alertUnknown show];
-		[alertUnknown release];
-		return;
-	} else {
-		_cydiaManaged = (_pkgName != nil);
-		[self askDelete];
-		return;
-	}
-}
-
-// The [self retain] here does NOT seem right.
-- (void)askDelete {
-	NSString *title = [NSString stringWithFormat:SBLocalizedString(@"UNINSTALL_ICON_TITLE"), [_SBIcon displayName]];
-	NSString *body;
-	if(_cydiaManaged)
-		body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_DELETE_BODY"), [_SBIcon displayName], _pkgName];
-	else
-		body = [NSString stringWithFormat:SBLocalizedString(@"DELETE_WIDGET_BODY"), [_SBIcon displayName]];
-	id delView = [[[UIAlertView alloc]
-			initWithTitle:title
-			message:body
-			delegate:[self retain]
-			cancelButtonTitle:nil
-			otherButtonTitles:nil]
-		autorelease];
-	[delView addButtonWithTitle:SBLocalizedString(@"UNINSTALL_ICON_CONFIRM")];
-	[delView addButtonWithTitle:SBLocalizedString(@"UNINSTALL_ICON_CANCEL")];
-	[delView setCancelButtonIndex:1];
-	[delView show];
-}
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-	if(buttonIndex == [alertView cancelButtonIndex]) {
-		[self release];
-		return;
-	}
-	[self _uninstall];
-}
-
-- (void)_uninstall {
-	[self startHUD:CDLocalizedString(@"PACKAGE_UNINSTALLING")];
-	[NSThread detachNewThreadSelector:(_cydiaManaged ? @selector(uninstall_thread_dpkg:) : @selector(uninstall_thread_nondpkg:))
-		  toTarget:self
-		  withObject:[NSThread currentThread]];
-}
-
-- (void)uninstall_thread_dpkg:(NSThread *)callingThread {
-	id pool = [[NSAutoreleasePool alloc] init];
-	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_dpkg.sh %@", _pkgName];
-	NSString *body = __CyDelete_outputForShellCommand(command);
-	[self performSelector:@selector(uninstalled:) onThread:callingThread withObject:body waitUntilDone:YES];
-	[pool drain];
-}
-
-- (void)uninstall_thread_nondpkg:(NSThread *)callingThread {
-	id pool = [[NSAutoreleasePool alloc] init];
-	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
-	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_nondpkg.sh %@", [app path]];
-	system([command UTF8String]);
-	[self performSelector:@selector(uninstalled:) onThread:callingThread withObject:nil waitUntilDone:YES];
-	[pool drain];
-}
-
-- (void)uninstalled:(NSString *)body {
-	if(!body && _cydiaManaged) {
-		[self killHUD];
-		body = [[NSString alloc] initWithFormat:CDLocalizedString(@"PACKAGE_UNINSTALL_ERROR_BODY"), _pkgName];
-		UIAlertView *delView = [[UIAlertView alloc] initWithTitle:CDLocalizedString(@"PACKAGE_UNINSTALL_ERROR_TITLE") message:body delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
-		[delView show];
-		[delView release];
-		[body release];
-	} else {
-		/* Remove the Application from the ApplicationController */
-		id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[_SBIcon displayIdentifier]];
-		NSString *bundle = [[app bundle] bundleIdentifier];
-		[sharedSBApplicationController removeApplicationsFromModelWithBundleIdentifier:bundle];
-
-		/* Uninstall the icon with the cool "winking out of existence" animation! */
-		id sharedSBIconController = [DHClass(SBIconController) sharedInstance];
-		[sharedSBIconController uninstallIcon:_SBIcon animate:YES];
-
-		[self removeFromMIList:bundle];
-
-		if([bundle isEqualToString:@"jp.ashikase.springjumps"]) {
-			id sharedSBIconModel = [DHClass(SBIconModel) sharedInstance];
-
-			NSArray *allBundles = [sharedSBApplicationController allApplications];
-			int i = 0;
-			int count = [allBundles count];
-			for(i = 0; i < count; i++) {
-				SBApplication *curApp = [allBundles objectAtIndex:i];
-				NSString *bundle = [curApp bundleIdentifier];
-				if(![bundle hasPrefix:@"jp.ashikase.springjumps."])
-					continue;
-				SBIcon *curIcon = [sharedSBIconModel iconForDisplayIdentifier:[curApp displayIdentifier]];
-				if(!curIcon) continue;
-				[self removeFromMIList:bundle];
-				[sharedSBApplicationController removeApplicationsFromModelWithBundleIdentifier:bundle];
-				[sharedSBIconController uninstallIcon:curIcon animate:YES];
-			}
-		}
-
-		[self killHUD];
-	}
-
-	[self autorelease];
-}
-
-- (void)dealloc {
-	[self killHUD];
-	[_hud release];
-	[_win release];
-	[_path release];
-	[_pkgName release];
-	[_SBIcon release];
-	[super dealloc];
-}
-
-@end
-
-NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd) {
+__attribute__((unused)) static NSMutableString *outputForShellCommand(NSString *cmd) {
 	FILE *fp;
 	char buf[1024];
 	NSMutableString* finalRet;
@@ -324,42 +223,6 @@ NSMutableString *__CyDelete_outputForShellCommand(NSString *cmd) {
 	return finalRet;
 }
 
-
-HOOK(SBIcon, allowsCloseBox, BOOL) {
-	if(CALL_ORIG(SBIcon, allowsCloseBox)) return YES;
-	if (!safariCloseBox) safariCloseBox = [[UIImage imageWithContentsOfFile:@"/Applications/MobileSafari.app/closebox.png"] retain];
-
-	NSString *bundle = [self displayIdentifier];
-	if(([bundle hasPrefix:@"com.apple."] && ![bundle hasPrefix:@"com.apple.samplecode."])
-	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
-	|| [bundle hasPrefix:@"com.bigboss.categories."]
-	|| ([bundle isEqualToString:@"com.ripdev.icy"] && CDGetBoolPref(@"CDProtectIcy", false))
-	|| [bundle hasPrefix:@"jp.ashikase.springjumps."]
-	|| [bundle hasPrefix:@"com.steventroughtonsmith.stack"])
-		return NO;
-	else return YES;
-}
-
-HOOK(SBIcon, closeBoxClicked$, void, id fp8) {
-	sharedSBApplicationController = [DHClass(SBApplicationController) sharedInstance];
-	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[self displayIdentifier]];
-
-	if(!app || ![app isSystemApplication] || [[app path] isEqualToString:@"/Applications/Web.app"]) {
-		CALL_ORIG(SBIcon, closeBoxClicked$, fp8);
-		return;
-	}
-	if(getFreeMemory() < 20) {
-		id memView = [[[UIAlertView alloc] initWithTitle:nil message:CDLocalizedString(@"NOT_ENOUGH_MEMORY")
-						   delegate:nil cancelButtonTitle:CDLocalizedString(@"PACKAGE_FINISH_OKAY")
-						   otherButtonTitles:nil] autorelease];
-		[memView show];
-		return;
-	}
-	id qd = [[CyDelete alloc] initWithIcon:self path:[app path]];
-	[qd _closeBoxClicked];
-	[qd release];
-}
-
 HOOK(SBApplication, deactivated, void) {
 	if([[self displayIdentifier] isEqualToString:@"com.apple.Preferences"]) {
 		CDUpdatePrefs();
@@ -376,30 +239,138 @@ static void CDUpdatePrefs() {
 	}
 }
 
-HOOK(SBIcon, setIsShowingCloseBox$, void, BOOL fp) {
-	CALL_ORIG(SBIcon, setIsShowingCloseBox$, fp);
-	if(fp == NO) return;
+HOOK(SBApplicationController, uninstallApplication$, void, id application) {
+	if(![application isSystemApplication]) {
+		CALL_ORIG(SBApplicationController, uninstallApplication$, application);
+		return;
+	}
+
+	NSString *package = (NSString *)CFDictionaryGetValue(iconPackagesDict, [[DHClass(SBIconModel) sharedInstance] iconForDisplayIdentifier:[application displayIdentifier]]);
+	NSString *path = [application path];
+	CDUninstallOperation *op;
+	if(!package)
+		op = [[CDUninstallDeleteOperation alloc] initWithPath:path];
+	else
+		op = [[CDUninstallDpkgOperation alloc] initWithPackage:package];
+	[uninstallQueue addOperation:op];
+	[op release];
+	removeBundleFromMIList([[application bundle] bundleIdentifier]);
+	if([[[application bundle] bundleIdentifier] isEqualToString:@"jp.ashikase.springjumps"]) {
+		NSArray *allBundles = [self allApplications];
+		int i = 0;
+		int count = [allBundles count];
+		for(i = 0; i < count; i++) {
+			SBApplication *curApp = [allBundles objectAtIndex:i];
+			NSString *bundle = [curApp bundleIdentifier];
+			if(![bundle hasPrefix:@"jp.ashikase.springjumps."])
+				continue;
+			SBIcon *curIcon = [[$SBIconModel sharedInstance] iconForDisplayIdentifier:[curApp displayIdentifier]];
+			if(!curIcon) continue;
+			removeBundleFromMIList(bundle);
+			[self removeApplicationsFromModelWithBundleIdentifier:bundle];
+			[[$SBIconController sharedInstance] removeIcon:curIcon animate:YES];
+		}
+	}
+}
+
+IMPLEMENTATION(SBApplicationIcon, allowsCloseBox, BOOL) {
+	NSString *bundle = [self displayIdentifier];
+	if(([bundle hasPrefix:@"com.apple."] && ![bundle hasPrefix:@"com.apple.samplecode."])
+	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
+	|| [bundle hasPrefix:@"com.bigboss.categories."]
+	|| ([bundle isEqualToString:@"com.ripdev.icy"] && CDGetBoolPref(@"CDProtectIcy", false))
+	|| [bundle hasPrefix:@"jp.ashikase.springjumps."]
+	|| [bundle hasPrefix:@"com.steventroughtonsmith.stack"])
+		return NO;
+	if(getFreeMemory() < 20) return NO;
+	else return YES;
+}
+
+IMPLEMENTATION(SBApplicationIcon, closeBoxClicked$, void, id event) {
+	if(!CFDictionaryContainsKey(iconPackagesDict, self)) {
+		SBApplication *app = [self application];
+		NSString *bundle = [[app bundle] bundleIdentifier];
+		NSString *title = [self displayName];
+		NSString *plistPath = [NSString stringWithFormat:@"%@/Info.plist", [app path]];
+		NSString *_pkgName;
+		if([bundle isEqualToString:@"com.ripdev.Installer"]
+		   || [bundle isEqualToString:@"com.ripdev.install"]) {
+			// If we're dealing with Installer, short circuit over the package search. 
+			_pkgName = nil;
+		} else {
+			char *pkgNameC = owner([bundle UTF8String], [title UTF8String], [plistPath UTF8String]);
+			_pkgName = pkgNameC ? [[NSString stringWithUTF8String:pkgNameC] retain] : nil;
+		}
+		CFDictionaryAddValue(iconPackagesDict, self, _pkgName);
+	}
+
+	struct objc_super superclass = {self, DHClass(SBIcon)};
+	objc_msgSendSuper(&superclass, sel);
+}
+
+IMPLEMENTATION(SBApplicationIcon, setIsShowingCloseBox$, void, BOOL isShowingCloseBox) {
+	struct objc_super superclass = {self, DHClass(SBIcon)};
+	objc_msgSendSuper(&superclass, sel, isShowingCloseBox);
+	if(!isShowingCloseBox) return;
+	if(![[self application] isSystemApplication]) return;
 
 	UIPushButton *cb;
 	cb = MSHookIvar<UIPushButton *>(self, "_closeBox");
 
-	sharedSBApplicationController = [DHClass(SBApplicationController) sharedInstance];
-	id app = [sharedSBApplicationController applicationWithDisplayIdentifier:[self displayIdentifier]];
+	if(!safariCloseBox) safariCloseBox = [[UIImage imageWithContentsOfFile:@"/Applications/MobileSafari.app/closebox.png"] retain];
 
-        if([app isSystemApplication] && ![[app path] isEqualToString:@"/Applications/Web.app"]) {
-		[cb setImage:safariCloseBox forState:0];
-		[cb setImage:safariCloseBox forState:1];
-	}
+	[cb setImage:safariCloseBox forState:0];
+	[cb setImage:safariCloseBox forState:1];
+
+}
+
+IMPLEMENTATION(SBApplicationIcon, completeUninstall, void) {
+	[[DHClass(SBIconModel) sharedInstance] uninstallApplicationIcon:self];
+}
+
+IMPLEMENTATION(SBApplicationIcon, uninstallAlertTitle, NSString *) {
+	return [NSString stringWithFormat:SBLocalizedString(@"UNINSTALL_ICON_TITLE"),
+					[self displayName]];
+}
+
+IMPLEMENTATION(SBApplicationIcon, uninstallAlertBody, NSString *) {
+	NSString *package = (NSString *)CFDictionaryGetValue(iconPackagesDict, self);
+	NSString *body;
+	if(package)
+		body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_DELETE_BODY"),
+						[self displayName], package];
+	else
+		body = [NSString stringWithFormat:SBLocalizedString(@"DELETE_WIDGET_BODY"),
+						[self displayName]];
+	return body;
+}
+
+IMPLEMENTATION(SBApplicationIcon, uninstallAlertConfirmTitle, NSString *) {
+	return SBLocalizedString(@"UNINSTALL_ICON_CONFIRM");
+}
+
+IMPLEMENTATION(SBApplicationIcon, uninstallAlertCancelTitle, NSString *) {
+	return SBLocalizedString(@"UNINSTALL_ICON_CANCEL");
 }
 
 static _Constructor void CyDeleteInitialize() {
 	DHScopedAutoreleasePool();
 
-	HOOK_MESSAGE(SBIcon, allowsCloseBox);
-	HOOK_MESSAGE_AUTO(SBIcon, closeBoxClicked$);
-	HOOK_MESSAGE_AUTO(SBIcon, setIsShowingCloseBox$);
 	HOOK_MESSAGE(SBApplication, deactivated);
+	HOOK_MESSAGE_REPLACEMENT(SBApplicationController, uninstallApplication:, uninstallApplication$);
+
+	ADD_MESSAGE(SBApplicationIcon, allowsCloseBox);
+	ADD_MESSAGE_REPLACEMENT(SBApplicationIcon, closeBoxClicked:, closeBoxClicked$);
+	ADD_MESSAGE_REPLACEMENT(SBApplicationIcon, setIsShowingCloseBox:, setIsShowingCloseBox$);
+	ADD_MESSAGE(SBApplicationIcon, completeUninstall);
+	ADD_MESSAGE(SBApplicationIcon, uninstallAlertTitle);
+	ADD_MESSAGE(SBApplicationIcon, uninstallAlertBody);
+	ADD_MESSAGE(SBApplicationIcon, uninstallAlertConfirmTitle);
+	ADD_MESSAGE(SBApplicationIcon, uninstallAlertCancelTitle);
 
 	initTranslation();
 	CDUpdatePrefs();
+	iconPackagesDict = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
+	uninstallQueue = [[NSOperationQueue alloc] init];
+	[uninstallQueue setMaxConcurrentOperationCount:1];
 }
