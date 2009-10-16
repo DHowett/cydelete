@@ -254,8 +254,8 @@ HOOK(SBApplicationController, uninstallApplication$, void, id application) {
 		op = [[CDUninstallDpkgOperation alloc] initWithPackage:package];
 	[uninstallQueue addOperation:op];
 	[op release];
-	removeBundleFromMIList([[application bundle] bundleIdentifier]);
-	if([[[application bundle] bundleIdentifier] isEqualToString:@"jp.ashikase.springjumps"]) {
+	removeBundleFromMIList([application bundleIdentifier]);
+	if([[application bundleIdentifier] isEqualToString:@"jp.ashikase.springjumps"]) {
 		NSArray *allBundles = [self allApplications];
 		int i = 0;
 		int count = [allBundles count];
@@ -289,7 +289,7 @@ IMPLEMENTATION(SBApplicationIcon, allowsCloseBox, BOOL) {
 IMPLEMENTATION(SBApplicationIcon, closeBoxClicked$, void, id event) {
 	if(!CFDictionaryContainsKey(iconPackagesDict, self)) {
 		SBApplication *app = [self application];
-		NSString *bundle = [[app bundle] bundleIdentifier];
+		NSString *bundle = [app bundleIdentifier];
 		NSString *title = [self displayName];
 		NSString *plistPath = [NSString stringWithFormat:@"%@/Info.plist", [app path]];
 		NSString *_pkgName;
