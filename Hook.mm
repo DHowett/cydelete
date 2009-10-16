@@ -245,7 +245,7 @@ HOOK(SBApplicationController, uninstallApplication$, void, id application) {
 		return;
 	}
 
-	NSString *package = (NSString *)CFDictionaryGetValue(iconPackagesDict, [[DHClass(SBIconModel) sharedInstance] iconForDisplayIdentifier:[application displayIdentifier]]);
+	NSString *package = (NSString *)CFDictionaryGetValue(iconPackagesDict, [[$SBIconModel sharedInstance] iconForDisplayIdentifier:[application displayIdentifier]]);
 	NSString *path = [application path];
 	CDUninstallOperation *op;
 	if(!package)
@@ -304,12 +304,12 @@ IMPLEMENTATION(SBApplicationIcon, closeBoxClicked$, void, id event) {
 		CFDictionaryAddValue(iconPackagesDict, self, _pkgName);
 	}
 
-	struct objc_super superclass = {self, DHClass(SBIcon)};
+	struct objc_super superclass = {self, $SBIcon};
 	objc_msgSendSuper(&superclass, sel);
 }
 
 IMPLEMENTATION(SBApplicationIcon, setIsShowingCloseBox$, void, BOOL isShowingCloseBox) {
-	struct objc_super superclass = {self, DHClass(SBIcon)};
+	struct objc_super superclass = {self, $SBIcon};
 	objc_msgSendSuper(&superclass, sel, isShowingCloseBox);
 	if(!isShowingCloseBox) return;
 	if(![[self application] isSystemApplication]) return;
@@ -325,7 +325,7 @@ IMPLEMENTATION(SBApplicationIcon, setIsShowingCloseBox$, void, BOOL isShowingClo
 }
 
 IMPLEMENTATION(SBApplicationIcon, completeUninstall, void) {
-	[[DHClass(SBIconModel) sharedInstance] uninstallApplicationIcon:self];
+	[[$SBIconModel sharedInstance] uninstallApplicationIcon:self];
 }
 
 IMPLEMENTATION(SBApplicationIcon, uninstallAlertTitle, NSString *) {
