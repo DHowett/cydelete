@@ -165,6 +165,8 @@ static char *owner(const char *_bundle, const char *_title, const char *_path) {
 	system([command UTF8String]);
 	[self completeOperation];
 }
+
+- (void)dealloc { [_path release]; [super dealloc]; }
 @end
 
 @implementation CDUninstallDpkgOperation
@@ -190,6 +192,8 @@ static char *owner(const char *_bundle, const char *_title, const char *_path) {
 	if(!output) [self performSelectorOnMainThread:@selector(displayError) withObject:nil waitUntilDone:NO];
 	[self completeOperation];
 }
+
+- (void)dealloc { [_package release]; [super dealloc]; }
 @end
 
 static void removeBundleFromMIList(NSString *bundle) {
@@ -351,7 +355,6 @@ static void reloadPrefsNotification(CFNotificationCenterRef center,
 					CFStringRef name,
 					const void *object,
 					CFDictionaryRef userInfo) {
-	NSLog(@"Updating Preferences.");
 	CDUpdatePrefs();
 }
 
