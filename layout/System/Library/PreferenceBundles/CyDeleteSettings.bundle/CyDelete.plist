@@ -25,6 +25,7 @@
 			<string>Cydia</string>
 			<key>icon</key>
 			<string>Cydia.png</string>
+			<key>postNotification</key><string>net.howett.cydelete/ReloadPrefs</string>
 			<!--<key>set</key><string>setCydiaProtection:specifier:</string>-->
 		</dict>
 		<dict>
@@ -42,6 +43,7 @@
 			<string>Icy</string>
 			<key>icon</key>
 			<string>Icy.png</string>
+			<key>postNotification</key><string>net.howett.cydelete/ReloadPrefs</string>
 		</dict>
 		<dict>
 			<key>cell</key>

@@ -223,13 +223,6 @@ __attribute__((unused)) static NSMutableString *outputForShellCommand(NSString *
 	return finalRet;
 }
 
-HOOK(SBApplication, deactivated, void) {
-	if([[self displayIdentifier] isEqualToString:@"com.apple.Preferences"]) {
-		CDUpdatePrefs();
-	}
-	CALL_ORIG(SBApplication, deactivated);
-}
-
 static void CDUpdatePrefs() {
 	NSDictionary *prefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/net.howett.cydelete.plist"];
 	if(!prefs) return;
@@ -353,10 +346,18 @@ IMPLEMENTATION(SBApplicationIcon, uninstallAlertCancelTitle, NSString *) {
 	return SBLocalizedString(@"UNINSTALL_ICON_CANCEL");
 }
 
+static void reloadPrefsNotification(CFNotificationCenterRef center,
+					void *observer,
+					CFStringRef name,
+					const void *object,
+					CFDictionaryRef userInfo) {
+	NSLog(@"Updating Preferences.");
+	CDUpdatePrefs();
+}
+
 static _Constructor void CyDeleteInitialize() {
 	DHScopedAutoreleasePool();
 
-	HOOK_MESSAGE(SBApplication, deactivated);
 	HOOK_MESSAGE_REPLACEMENT(SBApplicationController, uninstallApplication:, uninstallApplication$);
 
 	ADD_MESSAGE(SBApplicationIcon, allowsCloseBox);
@@ -373,4 +374,8 @@ static _Constructor void CyDeleteInitialize() {
 	iconPackagesDict = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
 	uninstallQueue = [[NSOperationQueue alloc] init];
 	[uninstallQueue setMaxConcurrentOperationCount:1];
+
+	CFNotificationCenterRef r = CFNotificationCenterGetDarwinNotifyCenter();
+	CFNotificationCenterAddObserver(r, NULL, &reloadPrefsNotification,
+					CFSTR("net.howett.cydelete/ReloadPrefs"), NULL, 0);
 }

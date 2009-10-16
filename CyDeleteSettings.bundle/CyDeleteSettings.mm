@@ -1,5 +1,7 @@
 #import "CyDeleteSettings.h"
 
+static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwinNotifyCenter();
+
 @implementation CyDeleteSettingsController
 
 - (void)viewDidBecomeVisible {
@@ -16,6 +18,13 @@
 
 - (void)donationButton:(id)arg {
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4275311"]];
+}
+
+-(void)setPreferenceValue:(id)value specifier:(id)specifier {
+	[super setPreferenceValue:value specifier:specifier];
+	// Post a notification.
+	NSString *notification = [specifier propertyForKey:@"postNotification"];
+	CFNotificationCenterPostNotification(darwinNotifyCenter, (CFStringRef)notification, NULL, NULL, true);
 }
 
 /*
