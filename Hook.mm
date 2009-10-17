@@ -22,7 +22,7 @@ DHLateClass(SBApplicationController);
 
 static NSBundle *cyDelBundle = nil;
 static NSDictionary *cyDelPrefs = nil;
-static CFMutableDictionaryRef iconPackagesDict;
+static NSMutableDictionary *iconPackagesDict;
 static NSOperationQueue *uninstallQueue;
 static UIImage *safariCloseBox = nil;
 
@@ -242,10 +242,10 @@ HOOK(SBApplicationController, uninstallApplication$, void, id application) {
 		return;
 	}
 
-	NSString *package = (NSString *)CFDictionaryGetValue(iconPackagesDict, [[$SBIconModel sharedInstance] iconForDisplayIdentifier:[application displayIdentifier]]);
+	id package = [iconPackagesDict objectForKey:[application displayIdentifier]];
 	NSString *path = [application path];
 	CDUninstallOperation *op;
-	if(!package)
+	if(package == [NSNull null])
 		op = [[CDUninstallDeleteOperation alloc] initWithPath:path];
 	else
 		op = [[CDUninstallDpkgOperation alloc] initWithPackage:package];
@@ -284,12 +284,12 @@ IMPLEMENTATION(SBApplicationIcon, allowsCloseBox, BOOL) {
 }
 
 IMPLEMENTATION(SBApplicationIcon, closeBoxClicked$, void, id event) {
-	if(!CFDictionaryContainsKey(iconPackagesDict, self)) {
+	if(![[iconPackagesDict allKeys] containsObject:[self displayIdentifier]]) {
 		SBApplication *app = [self application];
 		NSString *bundle = [app bundleIdentifier];
 		NSString *title = [self displayName];
 		NSString *plistPath = [NSString stringWithFormat:@"%@/Info.plist", [app path]];
-		NSString *_pkgName;
+		id _pkgName;
 		if([bundle isEqualToString:@"com.ripdev.Installer"]
 		   || [bundle isEqualToString:@"com.ripdev.install"]) {
 			// If we're dealing with Installer, short circuit over the package search. 
@@ -298,7 +298,7 @@ IMPLEMENTATION(SBApplicationIcon, closeBoxClicked$, void, id event) {
 			char *pkgNameC = owner([bundle UTF8String], [title UTF8String], [plistPath UTF8String]);
 			_pkgName = pkgNameC ? [[NSString stringWithUTF8String:pkgNameC] retain] : nil;
 		}
-		CFDictionaryAddValue(iconPackagesDict, self, _pkgName);
+		[iconPackagesDict setObject:(_pkgName ?: [NSNull null]) forKey:[self displayIdentifier]];
 	}
 
 	struct objc_super superclass = {self, $SBIcon};
@@ -331,14 +331,14 @@ IMPLEMENTATION(SBApplicationIcon, uninstallAlertTitle, NSString *) {
 }
 
 IMPLEMENTATION(SBApplicationIcon, uninstallAlertBody, NSString *) {
-	NSString *package = (NSString *)CFDictionaryGetValue(iconPackagesDict, self);
+	id package = [iconPackagesDict objectForKey:[self displayIdentifier]];
 	NSString *body;
-	if(package)
-		body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_DELETE_BODY"),
-						[self displayName], package];
-	else
+	if(package == [NSNull null])
 		body = [NSString stringWithFormat:SBLocalizedString(@"DELETE_WIDGET_BODY"),
 						[self displayName]];
+	else
+		body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_DELETE_BODY"),
+						[self displayName], package];
 	return body;
 }
 
@@ -374,7 +374,7 @@ static _Constructor void CyDeleteInitialize() {
 
 	initTranslation();
 	CDUpdatePrefs();
-	iconPackagesDict = CFDictionaryCreateMutable(NULL, 0, NULL, NULL);
+	iconPackagesDict = [[NSMutableDictionary alloc] init];
 	uninstallQueue = [[NSOperationQueue alloc] init];
 	[uninstallQueue setMaxConcurrentOperationCount:1];
 
