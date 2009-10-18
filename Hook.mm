@@ -242,6 +242,9 @@ HOOK(SBApplicationController, uninstallApplication$, void, SBApplication *applic
 		return;
 	}
 
+	// If the application is running, kill it.
+	[application kill];
+
 	id package = [iconPackagesDict objectForKey:[application displayIdentifier]];
 	NSString *path = [application path];
 	CDUninstallOperation *op;
