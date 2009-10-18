@@ -236,7 +236,7 @@ static void CDUpdatePrefs() {
 	}
 }
 
-HOOK(SBApplicationController, uninstallApplication$, void, id application) {
+HOOK(SBApplicationController, uninstallApplication$, void, SBApplication *application) {
 	if(![application isSystemApplication]) {
 		CALL_ORIG(SBApplicationController, uninstallApplication$, application);
 		return;
