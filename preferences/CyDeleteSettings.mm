@@ -1,9 +1,19 @@
-#import "CyDeleteSettings.h"
+#import <DHLocalizedListController.h>
 
 static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwinNotifyCenter();
 
+@interface CyDeleteSettingsController : DHLocalizedListController {
+	bool _cydiaPresent;
+	bool _icyPresent;
+}
+- (id)specifiers;
+- (void)donationButton:(id)arg;
+- (void)setPreferenceValue:(id)value specifier:(id)specifier;
+@end
+
 @implementation CyDeleteSettingsController
 
+/*
 - (void)viewDidBecomeVisible {
 	NSFileManager *manager = [NSFileManager defaultManager];
 	_cydiaPresent = [manager fileExistsAtPath:@"/Applications/Cydia.app/Info.plist"];
@@ -11,6 +21,7 @@ static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwi
 //	if(!_cydiaPresent) [self removeSpecifier:[_specifiers objectAtIndex:5] animated:YES];
 //	if(!_icyPresent) [self removeSpecifier:[_specifiers objectAtIndex:6] animated:YES];
 }
+*/
 
 - (id)specifiers {
 	return [self localizedSpecifiersWithSpecifiers:[self loadSpecifiersFromPlistName:@"CyDelete" target:self]];
@@ -20,7 +31,7 @@ static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwi
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4275311"]];
 }
 
--(void)setPreferenceValue:(id)value specifier:(id)specifier {
+- (void)setPreferenceValue:(id)value specifier:(id)specifier {
 	[super setPreferenceValue:value specifier:specifier];
 	// Post a notification.
 	NSString *notification = [specifier propertyForKey:@"postNotification"];

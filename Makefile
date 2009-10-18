@@ -9,7 +9,7 @@ PWD:=$(shell pwd)
 TOP_DIR:=$(PWD)
 FRAMEWORKDIR=$(TOP_DIR)/framework
 tweak:=CyDelete
-subdirs:=CyDeleteSettings.bundle
+subdirs:=preferences
 include $(FRAMEWORKDIR)/makefiles/MSMakefile
 
 project-all: setuid
@@ -23,7 +23,7 @@ project-clean:
 	rm -f setuid
 
 project-package-local:
-	cp CyDeleteSettings.bundle/CyDeleteSettings _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/
+	cp preferences/CyDeleteSettings _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/
 	cp setuid _/usr/libexec/cydelete
 	rm _$(BUNDLEDIR)/$(BUNDLENAME)/convert.sh
 	sed -i "s/VERSION/$(VERSION)/g" _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/Info.plist
