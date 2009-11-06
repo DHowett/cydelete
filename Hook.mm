@@ -17,7 +17,7 @@ DHLateClass(SBIcon);
 DHLateClass(SBApplicationIcon);
 DHLateClass(SBIconModel);
 DHLateClass(SBIconController);
-DHLateClass(SBApplication);
+//DHLateClass(SBApplication);
 DHLateClass(SBApplicationController);
 
 static NSBundle *cyDelBundle = nil;
@@ -237,7 +237,7 @@ static void CDUpdatePrefs() {
 }
 
 HOOK(SBApplicationController, uninstallApplication$, void, SBApplication *application) {
-	if(![application isSystemApplication]) {
+	if(![application isSystemApplication] || [[application path] isEqualToString:@"/Applications/Web.app"]) {
 		CALL_ORIG(SBApplicationController, uninstallApplication$, application);
 		return;
 	}
@@ -274,6 +274,11 @@ HOOK(SBApplicationController, uninstallApplication$, void, SBApplication *applic
 }
 
 IMPLEMENTATION(SBApplicationIcon, allowsCloseBox, BOOL) {
+	if([self class] != $SBApplicationIcon) {
+		struct objc_super superclass = {self, $SBIcon};
+		return reinterpret_cast<int>(objc_msgSendSuper(&superclass, sel));
+	}
+
 	NSString *bundle = [self displayIdentifier];
 	if(([bundle hasPrefix:@"com.apple."] && ![bundle hasPrefix:@"com.apple.samplecode."])
 	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
@@ -287,6 +292,12 @@ IMPLEMENTATION(SBApplicationIcon, allowsCloseBox, BOOL) {
 }
 
 IMPLEMENTATION(SBApplicationIcon, closeBoxClicked$, void, id event) {
+	if([self class] != $SBApplicationIcon) {
+		struct objc_super superclass = {self, $SBIcon};
+		objc_msgSendSuper(&superclass, sel);
+		return;
+	}
+
 	if(![[iconPackagesDict allKeys] containsObject:[self displayIdentifier]]) {
 		SBApplication *app = [self application];
 		NSString *bundle = [app bundleIdentifier];
@@ -311,6 +322,8 @@ IMPLEMENTATION(SBApplicationIcon, closeBoxClicked$, void, id event) {
 IMPLEMENTATION(SBApplicationIcon, setIsShowingCloseBox$, void, BOOL isShowingCloseBox) {
 	struct objc_super superclass = {self, $SBIcon};
 	objc_msgSendSuper(&superclass, sel, isShowingCloseBox);
+	if([self class] != $SBApplicationIcon) { return; }
+
 	if(!isShowingCloseBox) return;
 	if(![[self application] isSystemApplication]) return;
 
@@ -325,6 +338,12 @@ IMPLEMENTATION(SBApplicationIcon, setIsShowingCloseBox$, void, BOOL isShowingClo
 }
 
 IMPLEMENTATION(SBApplicationIcon, completeUninstall, void) {
+	if([self class] != $SBApplicationIcon) {
+		struct objc_super superclass = {self, $SBIcon};
+		objc_msgSendSuper(&superclass, sel);
+		return;
+	}
+
 	[[$SBIconModel sharedInstance] uninstallApplicationIcon:self];
 }
 
