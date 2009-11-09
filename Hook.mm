@@ -284,6 +284,7 @@ IMPLEMENTATION(SBApplicationIcon, allowsCloseBox, BOOL) {
 	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
 	|| [bundle hasPrefix:@"com.bigboss.categories."]
 	|| ([bundle isEqualToString:@"com.ripdev.icy"] && CDGetBoolPref(@"CDProtectIcy", false))
+	|| ([bundle isEqualToString:@"com.rockyourphone.rockapp"] && CDGetBoolPref(@"CDProtectRock", false))
 	|| [bundle hasPrefix:@"jp.ashikase.springjumps."]
 	|| [bundle hasPrefix:@"com.steventroughtonsmith.stack"])
 		return NO;

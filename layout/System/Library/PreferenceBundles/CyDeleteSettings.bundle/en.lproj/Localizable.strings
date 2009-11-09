@@ -11,6 +11,6 @@
 	<key>PROTECTED_TITLE</key>
 	<string>Protected Applications</string>
 	<key>PROTECTED_WARNING</key>
-	<string>Deleting both of these applications will leave you without a Graphical Interface for installing packages, and is NOT recommended.</string>
+	<string>Deleting all of these applications will leave you without a Graphical Interface for installing packages, and is NOT recommended.</string>
 </dict>
 </plist>
