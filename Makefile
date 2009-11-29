@@ -26,8 +26,8 @@ project-package-local:
 	cp preferences/CyDeleteSettings _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/
 	cp setuid _/usr/libexec/cydelete
 	rm _$(BUNDLEDIR)/$(BUNDLENAME)/convert.sh
-	sed -i "s/VERSION/$(VERSION)/g" _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/Info.plist
-	sed -i "s/VERSION/$(VERSION)/g" _/Library/MobileSubstrate/DynamicLibraries/CyDelete.bundle/Info.plist
+	plusutil -key CFBundleShortVersionString -string "$(VERSION)" _/System/Library/PreferenceBundles/CyDeleteSettings.bundle/Info.plist
+	plusutil -key CFBundleShortVersionString -string "$(VERSION)" _/Library/MobileSubstrate/DynamicLibraries/CyDelete.bundle/Info.plist
 
 project-package-post:
 	-find _ -iname '*.plist' -print0 | xargs -0 /home/dustin/bin/plutil -convert binary1
