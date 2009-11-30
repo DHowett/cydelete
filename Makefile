@@ -32,5 +32,5 @@ project-package-local:
 project-package-post:
 	-find _ -iname '*.plist' -print0 | xargs -0 /home/dustin/bin/plutil -convert binary1
 	-find _ -iname '*.strings' -print0 | xargs -0 /home/dustin/bin/plutil -convert binary1
-	$(FAKEROOT) chown 0:80 _ -R
+	$(FAKEROOT) chown -R 0:80 _
 	$(FAKEROOT) chmod 6755 _/usr/libexec/cydelete/setuid
