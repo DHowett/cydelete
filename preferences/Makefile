@@ -1,16 +1,11 @@
-LDFLAGS=-lobjc -framework Foundation -framework UIKit -framework CoreFoundation -multiply_defined suppress \
-	-Wall -Werror -lobjc -ObjC++ -fobjc-exceptions -bundle -fobjc-call-cxx-cdtors \
-	-F/System/Library/PrivateFrameworks -framework Preferences $(SDKFLAGS)
+BUNDLE_NAME := CyDeleteSettings
+CyDeleteSettings_OBJCC_FILES = CyDeleteSettings.mm
+CyDeleteSettings_OBJ_FILES = $(FRAMEWORKDIR)/lib/DHLocalizedListController.o
 
-all: CyDeleteSettings
+CyDeleteSettings_INSTALL_PATH = /System/Library/PreferenceBundles
 
-CyDeleteSettings: CyDeleteSettings.o
-	$(CC) $(LDFLAGS) -o $@ $^ $(FRAMEWORKDIR)/lib/DHLocalizedListController.o
-	$(STRIP) -x $@
-	CODESIGN_ALLOCATE=$(CODESIGN_ALLOCATE) ldid -S $@
+CyDeleteSettings_FRAMEWORKS = UIKit
+CyDeleteSettings_PRIVATE_FRAMEWORKS = Preferences
 
-%.o: %.mm
-	$(CC) -c $(CFLAGS) $< -o $@
-
-clean:
-	rm -f *.o CyDeleteSettings
+include ../framework/makefiles/common.mk
+include ../framework/makefiles/bundle.mk
