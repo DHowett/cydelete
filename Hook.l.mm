@@ -236,9 +236,9 @@ static void CDUpdatePrefs() {
 	}
 }
 
-HOOK(SBApplicationController, uninstallApplication$, void, SBApplication *application) {
+%hook SBApplicationController -(void)uninstallApplication:(SBApplication *)application {
 	if(![application isSystemApplication] || [[application path] isEqualToString:@"/Applications/Web.app"]) {
-		CALL_ORIG(SBApplicationController, uninstallApplication$, application);
+		%orig%;
 		return;
 	}
 
@@ -273,10 +273,9 @@ HOOK(SBApplicationController, uninstallApplication$, void, SBApplication *applic
 	}
 }
 
-IMPLEMENTATION(SBApplicationIcon, allowsCloseBox, BOOL) {
+%hook SBApplicationIcon -(BOOL)allowsCloseBox {
 	if([self class] != $SBApplicationIcon) {
-		struct objc_super superclass = {self, $SBIcon};
-		return reinterpret_cast<int>(objc_msgSendSuper(&superclass, sel));
+		return %orig%;
 	}
 
 	NSString *bundle = [self displayIdentifier];
@@ -292,10 +291,9 @@ IMPLEMENTATION(SBApplicationIcon, allowsCloseBox, BOOL) {
 	else return YES;
 }
 
-IMPLEMENTATION(SBApplicationIcon, closeBoxClicked$, void, id event) {
+%hook SBApplicationIcon -(void)closeBoxClicked:(id)event {
 	if([self class] != $SBApplicationIcon) {
-		struct objc_super superclass = {self, $SBIcon};
-		objc_msgSendSuper(&superclass, sel);
+		%orig%;
 		return;
 	}
 
@@ -320,9 +318,8 @@ IMPLEMENTATION(SBApplicationIcon, closeBoxClicked$, void, id event) {
 	objc_msgSendSuper(&superclass, sel);
 }
 
-IMPLEMENTATION(SBApplicationIcon, setIsShowingCloseBox$, void, BOOL isShowingCloseBox) {
-	struct objc_super superclass = {self, $SBIcon};
-	objc_msgSendSuper(&superclass, sel, isShowingCloseBox);
+%hook SBApplicationIcon -(void)setIsShowingCloseBox:(BOOL)isShowingCloseBox {
+	%orig%;
 	if([self class] != $SBApplicationIcon) { return; }
 
 	if(!isShowingCloseBox) return;
@@ -338,22 +335,20 @@ IMPLEMENTATION(SBApplicationIcon, setIsShowingCloseBox$, void, BOOL isShowingClo
 
 }
 
-IMPLEMENTATION(SBApplicationIcon, completeUninstall, void) {
+%hook SBApplicationIcon -(void)completeUninstall {
 	if([self class] != $SBApplicationIcon) {
-		struct objc_super superclass = {self, $SBIcon};
-		objc_msgSendSuper(&superclass, sel);
-		return;
+		%orig%;
 	}
 
 	[[$SBIconModel sharedInstance] uninstallApplicationIcon:self];
 }
 
-IMPLEMENTATION(SBApplicationIcon, uninstallAlertTitle, NSString *) {
+%hook SBApplicationIcon -(NSString *)uninstallAlertTitle {
 	return [NSString stringWithFormat:SBLocalizedString(@"UNINSTALL_ICON_TITLE"),
 					[self displayName]];
 }
 
-IMPLEMENTATION(SBApplicationIcon, uninstallAlertBody, NSString *) {
+%hook SBApplicationIcon -(NSString *)uninstallAlertBody {
 	id package = [iconPackagesDict objectForKey:[self displayIdentifier]];
 	NSString *body;
 	if(package == [NSNull null])
@@ -365,11 +360,11 @@ IMPLEMENTATION(SBApplicationIcon, uninstallAlertBody, NSString *) {
 	return body;
 }
 
-IMPLEMENTATION(SBApplicationIcon, uninstallAlertConfirmTitle, NSString *) {
+%hook SBApplicationIcon -(NSString *)uninstallAlertConfirmTitle {
 	return SBLocalizedString(@"UNINSTALL_ICON_CONFIRM");
 }
 
-IMPLEMENTATION(SBApplicationIcon, uninstallAlertCancelTitle, NSString *) {
+%hook SBApplicationIcon -(NSString *)uninstallAlertCancelTitle {
 	return SBLocalizedString(@"UNINSTALL_ICON_CANCEL");
 }
 
@@ -384,16 +379,7 @@ static void reloadPrefsNotification(CFNotificationCenterRef center,
 static _Constructor void CyDeleteInitialize() {
 	DHScopedAutoreleasePool();
 
-	HOOK_MESSAGE_REPLACEMENT(SBApplicationController, uninstallApplication:, uninstallApplication$);
-
-	ADD_MESSAGE(SBApplicationIcon, allowsCloseBox);
-	ADD_MESSAGE_REPLACEMENT(SBApplicationIcon, closeBoxClicked:, closeBoxClicked$);
-	ADD_MESSAGE_REPLACEMENT(SBApplicationIcon, setIsShowingCloseBox:, setIsShowingCloseBox$);
-	ADD_MESSAGE(SBApplicationIcon, completeUninstall);
-	ADD_MESSAGE(SBApplicationIcon, uninstallAlertTitle);
-	ADD_MESSAGE(SBApplicationIcon, uninstallAlertBody);
-	ADD_MESSAGE(SBApplicationIcon, uninstallAlertConfirmTitle);
-	ADD_MESSAGE(SBApplicationIcon, uninstallAlertCancelTitle);
+	%init%;
 
 	initTranslation();
 	CDUpdatePrefs();
