@@ -13,12 +13,9 @@ __attribute__((unused)) static NSMutableString *outputForShellCommand(NSString *
 static void removeBundleFromMIList(NSString *bundle);
 static void CDUpdatePrefs();
 
-DHLateClass(SBIcon);
-DHLateClass(SBApplicationIcon);
 DHLateClass(SBIconModel);
 DHLateClass(SBIconController);
-//DHLateClass(SBApplication);
-DHLateClass(SBApplicationController);
+DHLateClass(SBIcon);
 
 static NSBundle *cyDelBundle = nil;
 static NSDictionary *cyDelPrefs = nil;
@@ -273,7 +270,8 @@ static void CDUpdatePrefs() {
 	}
 }
 
-%hook SBApplicationIcon -(BOOL)allowsCloseBox {
+%hook SBApplicationIcon
+-(BOOL)allowsCloseBox {
 	if([self class] != $SBApplicationIcon) {
 		return %orig%;
 	}
@@ -291,7 +289,7 @@ static void CDUpdatePrefs() {
 	else return YES;
 }
 
-%hook SBApplicationIcon -(void)closeBoxClicked:(id)event {
+-(void)closeBoxClicked:(id)event {
 	if([self class] != $SBApplicationIcon) {
 		%orig%;
 		return;
@@ -318,7 +316,7 @@ static void CDUpdatePrefs() {
 	objc_msgSendSuper(&superclass, sel);
 }
 
-%hook SBApplicationIcon -(void)setIsShowingCloseBox:(BOOL)isShowingCloseBox {
+-(void)setIsShowingCloseBox:(BOOL)isShowingCloseBox {
 	%orig%;
 	if([self class] != $SBApplicationIcon) { return; }
 
@@ -335,7 +333,7 @@ static void CDUpdatePrefs() {
 
 }
 
-%hook SBApplicationIcon -(void)completeUninstall {
+-(void)completeUninstall {
 	if([self class] != $SBApplicationIcon) {
 		%orig%;
 	}
@@ -343,12 +341,12 @@ static void CDUpdatePrefs() {
 	[[$SBIconModel sharedInstance] uninstallApplicationIcon:self];
 }
 
-%hook SBApplicationIcon -(NSString *)uninstallAlertTitle {
+-(NSString *)uninstallAlertTitle {
 	return [NSString stringWithFormat:SBLocalizedString(@"UNINSTALL_ICON_TITLE"),
 					[self displayName]];
 }
 
-%hook SBApplicationIcon -(NSString *)uninstallAlertBody {
+-(NSString *)uninstallAlertBody {
 	id package = [iconPackagesDict objectForKey:[self displayIdentifier]];
 	NSString *body;
 	if(package == [NSNull null])
@@ -360,13 +358,14 @@ static void CDUpdatePrefs() {
 	return body;
 }
 
-%hook SBApplicationIcon -(NSString *)uninstallAlertConfirmTitle {
+-(NSString *)uninstallAlertConfirmTitle {
 	return SBLocalizedString(@"UNINSTALL_ICON_CONFIRM");
 }
 
-%hook SBApplicationIcon -(NSString *)uninstallAlertCancelTitle {
+-(NSString *)uninstallAlertCancelTitle {
 	return SBLocalizedString(@"UNINSTALL_ICON_CANCEL");
 }
+%end
 
 static void reloadPrefsNotification(CFNotificationCenterRef center,
 					void *observer,
@@ -379,7 +378,7 @@ static void reloadPrefsNotification(CFNotificationCenterRef center,
 static _Constructor void CyDeleteInitialize() {
 	DHScopedAutoreleasePool();
 
-	%init%;
+	%init;
 
 	initTranslation();
 	CDUpdatePrefs();
