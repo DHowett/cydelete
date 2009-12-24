@@ -47,7 +47,7 @@ static UIImage *safariCloseBox = nil;
 @end
 
 static void initTranslation() {
-	cyDelBundle = [[NSBundle bundleWithPath:BUNDLE] retain];
+	cyDelBundle = [[NSBundle bundleWithPath:@"/Library/MobileSubstrate/DynamicLibraries/CyDelete.bundle"] retain];
 }
 
 static bool CDGetBoolPref(id key, bool value) {
@@ -235,7 +235,7 @@ static void CDUpdatePrefs() {
 
 %hook SBApplicationController -(void)uninstallApplication:(SBApplication *)application {
 	if(![application isSystemApplication] || [[application path] isEqualToString:@"/Applications/Web.app"]) {
-		%orig%;
+		%orig;
 		return;
 	}
 
@@ -273,7 +273,7 @@ static void CDUpdatePrefs() {
 %hook SBApplicationIcon
 -(BOOL)allowsCloseBox {
 	if([self class] != $SBApplicationIcon) {
-		return %orig%;
+		return %orig;
 	}
 
 	NSString *bundle = [self displayIdentifier];
@@ -291,7 +291,7 @@ static void CDUpdatePrefs() {
 
 -(void)closeBoxClicked:(id)event {
 	if([self class] != $SBApplicationIcon) {
-		%orig%;
+		%orig;
 		return;
 	}
 
@@ -312,12 +312,11 @@ static void CDUpdatePrefs() {
 		[iconPackagesDict setObject:(_pkgName ?: [NSNull null]) forKey:[self displayIdentifier]];
 	}
 
-	struct objc_super superclass = {self, $SBIcon};
-	objc_msgSendSuper(&superclass, sel);
+	%orig;
 }
 
 -(void)setIsShowingCloseBox:(BOOL)isShowingCloseBox {
-	%orig%;
+	%orig;
 	if([self class] != $SBApplicationIcon) { return; }
 
 	if(!isShowingCloseBox) return;
@@ -335,7 +334,7 @@ static void CDUpdatePrefs() {
 
 -(void)completeUninstall {
 	if([self class] != $SBApplicationIcon) {
-		%orig%;
+		%orig;
 	}
 
 	[[$SBIconModel sharedInstance] uninstallApplicationIcon:self];
