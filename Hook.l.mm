@@ -269,6 +269,7 @@ static void CDUpdatePrefs() {
 		}
 	}
 }
+%end
 
 %hook SBApplicationIcon
 -(BOOL)allowsCloseBox {
