@@ -271,6 +271,7 @@ static void CDUpdatePrefs() {
 }
 %end
 
+%class SBApplicationIcon
 %hook SBApplicationIcon
 -(BOOL)allowsCloseBox {
 	if([self class] != $SBApplicationIcon) {
