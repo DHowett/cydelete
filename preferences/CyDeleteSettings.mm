@@ -3,6 +3,10 @@
 
 static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwinNotifyCenter();
 
+@interface UIDevice (wc)
+- (BOOL)isWildcat;
+@end
+
 @interface CyDeleteSettingsController : PSListController {
 	bool _cydiaPresent;
 	bool _icyPresent;
@@ -34,6 +38,9 @@ static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwi
 		if(name) {
 			[curSpec setName:[[self bundle] localizedStringForKey:name value:name table:nil]];
 		}
+		NSString *footerText = [curSpec propertyForKey:@"footerText"];
+		if(footerText)
+			[curSpec setProperty:[[self bundle] localizedStringForKey:footerText value:footerText table:nil] forKey:@"footerText"];
 		id titleDict = [curSpec titleDictionary];
 		if(titleDict) {
 			NSMutableDictionary *newTitles = [[NSMutableDictionary alloc] init];
@@ -48,7 +55,19 @@ static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwi
 }
 
 - (id)specifiers {
-	return [self localizedSpecifiersWithSpecifiers:[self loadSpecifiersFromPlistName:@"CyDelete" target:self]];
+	if(!_specifiers) {
+		_specifiers = [self localizedSpecifiersWithSpecifiers:[self loadSpecifiersFromPlistName:@"CyDelete" target:self]];
+		NSMutableArray *removals = [NSMutableArray array];
+		bool isWildcat = [UIDevice instancesRespondToSelector:@selector(isWildcat)] && [[UIDevice currentDevice] isWildcat];
+		for(PSSpecifier *spec in _specifiers) {
+			if([[spec propertyForKey:@"notWildcat"] boolValue] && isWildcat) [removals addObject:spec];
+		}
+		NSMutableArray *newSpec = [_specifiers mutableCopy];;
+		[newSpec removeObjectsInArray:removals];
+		_specifiers = newSpec;
+
+	}
+	return _specifiers;
 }
 
 - (void)donationButton:(id)arg {
