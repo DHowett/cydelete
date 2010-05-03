@@ -5,5 +5,5 @@ setuid_PACKAGE_TARGET_DIR = /usr/libexec/cydelete
 include ../framework/makefiles/common.mk
 include ../framework/makefiles/tool.mk
 
-after-setuid-package::
-	$(FAKEROOT) chmod 6755 $(FW_PACKAGE_STAGING_DIR)/usr/libexec/cydelete/setuid
+after-setuid-stage::
+	$(FAKEROOT) chmod 6755 $(FW_STAGING_DIR)/usr/libexec/cydelete/setuid
