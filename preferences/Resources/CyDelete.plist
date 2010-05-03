@@ -35,16 +35,26 @@
 			<string>PSGroupCell</string>
 			<key>isStaticText</key>
 			<true/>
-			<key>notWildcat</key>
-			<true/>
+			<key>requiredCapabilities</key>
+			<array>
+				<dict>
+					<key>wildcat</key>
+					<false/>
+				</dict>
+			</array>
 		</dict>
 		<dict>
 			<key>cell</key>
 			<string>PSTitleValueCell</string>
 			<key>label</key>
 			<string>PROTECTED_WARNING</string>
-			<key>notWildcat</key>
-			<true/>
+			<key>requiredCapabilities</key>
+			<array>
+				<dict>
+					<key>wildcat</key>
+					<false/>
+				</dict>
+			</array>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -63,12 +73,21 @@
 			<string>PSGroupCell</string>
 			<key>isStaticText</key>
 			<true/>
+			<key>footerText</key>
+			<string>CyDelete © 2009 Dustin L. Howett</string>
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSTitleViewCell</string>
+			<string>PSTitleValueCell</string>
 			<key>label</key>
 			<string>CyDelete © 2009 Dustin L. Howett</string>
+			<key>requiredCapabilities</key>
+			<array>
+				<dict>
+					<key>wildcat</key>
+					<false/>
+				</dict>
+			</array>
 		</dict>
 	</array>
 	<key>title</key>

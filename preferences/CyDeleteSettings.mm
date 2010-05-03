@@ -56,16 +56,7 @@ static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwi
 
 - (id)specifiers {
 	if(!_specifiers) {
-		_specifiers = [self localizedSpecifiersWithSpecifiers:[self loadSpecifiersFromPlistName:@"CyDelete" target:self]];
-		NSMutableArray *removals = [NSMutableArray array];
-		bool isWildcat = [UIDevice instancesRespondToSelector:@selector(isWildcat)] && [[UIDevice currentDevice] isWildcat];
-		for(PSSpecifier *spec in _specifiers) {
-			if([[spec propertyForKey:@"notWildcat"] boolValue] && isWildcat) [removals addObject:spec];
-		}
-		NSMutableArray *newSpec = [_specifiers mutableCopy];;
-		[newSpec removeObjectsInArray:removals];
-		_specifiers = newSpec;
-
+		_specifiers = [[self localizedSpecifiersWithSpecifiers:[self loadSpecifiersFromPlistName:@"CyDelete" target:self]] retain];
 	}
 	return _specifiers;
 }
