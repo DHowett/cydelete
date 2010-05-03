@@ -1,6 +1,5 @@
 BUNDLE_NAME := CyDeleteSettings
 CyDeleteSettings_OBJCC_FILES = CyDeleteSettings.mm
-CyDeleteSettings_OBJ_FILES = $(FRAMEWORKDIR)/lib/DHLocalizedListController.o
 
 CyDeleteSettings_INSTALL_PATH = /System/Library/PreferenceBundles
 

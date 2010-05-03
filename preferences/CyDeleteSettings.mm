@@ -1,8 +1,9 @@
-#import <DHLocalizedListController.h>
+#import <Preferences/PSSpecifier.h>
+#import <Preferences/PSListController.h>
 
 static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwinNotifyCenter();
 
-@interface CyDeleteSettingsController : DHLocalizedListController {
+@interface CyDeleteSettingsController : PSListController {
 	bool _cydiaPresent;
 	bool _icyPresent;
 }
@@ -22,6 +23,29 @@ static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwi
 //	if(!_icyPresent) [self removeSpecifier:[_specifiers objectAtIndex:6] animated:YES];
 }
 */
+
+- (id)navigationTitle {
+	return [[self bundle] localizedStringForKey:[super navigationTitle] value:[super navigationTitle] table:nil];
+}
+
+- (id)localizedSpecifiersWithSpecifiers:(NSArray *)specifiers {
+	for(PSSpecifier *curSpec in specifiers) {
+		NSString *name = [curSpec name];
+		if(name) {
+			[curSpec setName:[[self bundle] localizedStringForKey:name value:name table:nil]];
+		}
+		id titleDict = [curSpec titleDictionary];
+		if(titleDict) {
+			NSMutableDictionary *newTitles = [[NSMutableDictionary alloc] init];
+			for(NSString *key in titleDict) {
+				NSString *value = [titleDict objectForKey:key];
+				[newTitles setObject:[[self bundle] localizedStringForKey:value value:value table:nil] forKey: key];
+			}
+			[curSpec setTitleDictionary: [newTitles autorelease]];
+		}
+	}
+	return specifiers;
+}
 
 - (id)specifiers {
 	return [self localizedSpecifiersWithSpecifiers:[self loadSpecifiersFromPlistName:@"CyDelete" target:self]];
