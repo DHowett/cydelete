@@ -1,5 +1,5 @@
 TWEAK_NAME := CyDelete
-CyDelete_OBJCC_FILES = Hook.mm
+CyDelete_LOGOS_FILES = Hook.xm
 CyDelete_FRAMEWORKS = UIKit
 
 SUBPROJECTS = setuid preferences
