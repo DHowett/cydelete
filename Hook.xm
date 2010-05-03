@@ -21,7 +21,6 @@ static NSBundle *cyDelBundle = nil;
 static NSDictionary *cyDelPrefs = nil;
 static NSMutableDictionary *iconPackagesDict;
 static NSOperationQueue *uninstallQueue;
-static UIImage *safariCloseBox = nil;
 
 #define SBLocalizedString(key) [[NSBundle mainBundle] localizedStringForKey:key value:@"None" table:@"SpringBoard"]
 #define CDLocalizedString(key) [cyDelBundle localizedStringForKey:key value:key table:nil]
@@ -313,23 +312,6 @@ static void CDUpdatePrefs() {
 	}
 
 	%orig;
-}
-
--(void)setIsShowingCloseBox:(BOOL)isShowingCloseBox {
-	%orig;
-	if([self class] != $SBApplicationIcon) { return; }
-
-	if(!isShowingCloseBox) return;
-	if(![[self application] isSystemApplication]) return;
-
-	UIPushButton *cb;
-	cb = MSHookIvar<UIPushButton *>(self, "_closeBox");
-
-	if(!safariCloseBox) safariCloseBox = [[UIImage imageWithContentsOfFile:@"/Applications/MobileSafari.app/closebox.png"] retain];
-
-	[cb setImage:safariCloseBox forState:0];
-	[cb setImage:safariCloseBox forState:1];
-
 }
 
 -(void)completeUninstall {
