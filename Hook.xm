@@ -34,7 +34,7 @@ static NSOperationQueue *uninstallQueue;
 @interface CDUninstallDpkgOperation : CDUninstallOperation {
 	NSString *_package;
 }
-@property (nonatomic, assign) NSString *package;
+@property (nonatomic, retain) NSString *package;
 - (id)initWithPackage:(NSString *)package;
 @end
 
@@ -105,6 +105,15 @@ static char *owner(const char *_bundle, const char *_title, const char *_path) {
 	}
 	closedir(d);
 	return NULL;
+}
+
+static id ownerForSBApplication(SBApplication *application) {
+	NSString *bundle = [application bundleIdentifier];
+	NSString *title = [application displayName];
+	NSString *plistPath = [NSString stringWithFormat:@"%@/Info.plist", [application path]];
+	char *pkgNameC = owner([bundle UTF8String], [title UTF8String], [plistPath UTF8String]);
+	id package = pkgNameC ? [NSString stringWithUTF8String:pkgNameC] : [NSNull null];
+	return package;
 }
 
 @implementation CDUninstallOperation
@@ -242,6 +251,18 @@ static void CDUpdatePrefs() {
 	[application kill];
 
 	id package = [iconPackagesDict objectForKey:[application displayIdentifier]];
+
+	// We were called with an application that doesn't have an entry in the packages list.
+	// Probably by PogoPlank.
+	if(!package) {
+		package = ownerForSBApplication(application);
+	}
+
+	// We still don't have an entry (or a NSNull). We should probably bail out.
+	if(!package) {
+		return;
+	}
+
 	NSString *path = [application path];
 	CDUninstallOperation *op;
 	if(package == [NSNull null])
@@ -297,18 +318,15 @@ static void CDUpdatePrefs() {
 	if(![[iconPackagesDict allKeys] containsObject:[self displayIdentifier]]) {
 		SBApplication *app = [self application];
 		NSString *bundle = [app bundleIdentifier];
-		NSString *title = [self displayName];
-		NSString *plistPath = [NSString stringWithFormat:@"%@/Info.plist", [app path]];
 		id _pkgName;
 		if([bundle isEqualToString:@"com.ripdev.Installer"]
 		   || [bundle isEqualToString:@"com.ripdev.install"]) {
 			// If we're dealing with Installer, short circuit over the package search. 
-			_pkgName = nil;
+			_pkgName = [NSNull null];
 		} else {
-			char *pkgNameC = owner([bundle UTF8String], [title UTF8String], [plistPath UTF8String]);
-			_pkgName = pkgNameC ? [[NSString stringWithUTF8String:pkgNameC] retain] : nil;
+			_pkgName = ownerForSBApplication(app);
 		}
-		[iconPackagesDict setObject:(_pkgName ?: [NSNull null]) forKey:[self displayIdentifier]];
+		[iconPackagesDict setObject:_pkgName forKey:[self displayIdentifier]];
 	}
 
 	%orig;
