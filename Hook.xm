@@ -291,13 +291,15 @@ static void CDUpdatePrefs() {
 }
 %end
 
+@interface SBApplicationIcon (CyDelete)
+-(BOOL)cydelete_allowsUninstall;
+-(void)cydelete_uninstallClicked;
+@end
+
 %class SBApplicationIcon
 %hook SBApplicationIcon
--(BOOL)allowsCloseBox {
-	if([self class] != $SBApplicationIcon) {
-		return %orig;
-	}
-
+%new(c@:)
+-(BOOL)cydelete_allowsUninstall {
 	NSString *bundle = [self displayIdentifier];
 	if(([bundle hasPrefix:@"com.apple."] && ![bundle hasPrefix:@"com.apple.samplecode."])
 	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
@@ -309,12 +311,24 @@ static void CDUpdatePrefs() {
 	else return YES;
 }
 
--(void)closeBoxClicked:(id)event {
+-(BOOL)allowsCloseBox {
 	if([self class] != $SBApplicationIcon) {
-		%orig;
-		return;
+		return %orig;
 	}
 
+	return [self cydelete_allowsUninstall];
+}
+
+-(BOOL)allowsUninstall {
+	if([self class] != $SBApplicationIcon) {
+		return %orig;
+	}
+
+	return [self cydelete_allowsUninstall];
+}
+
+%new(v@:)
+-(void)cydelete_uninstallClicked {
 	if(![[iconPackagesDict allKeys] containsObject:[self displayIdentifier]]) {
 		SBApplication *app = [self application];
 		NSString *bundle = [app bundleIdentifier];
@@ -328,6 +342,26 @@ static void CDUpdatePrefs() {
 		}
 		[iconPackagesDict setObject:_pkgName forKey:[self displayIdentifier]];
 	}
+}
+
+-(void)closeBoxClicked:(id)event {
+	if([self class] != $SBApplicationIcon) {
+		%orig;
+		return;
+	}
+
+	[self cydelete_uninstallClicked];
+
+	%orig;
+}
+
+-(void)uninstallClicked:(id)event {
+	if([self class] != $SBApplicationIcon) {
+		%orig;
+		return;
+	}
+
+	[self cydelete_uninstallClicked];
 
 	%orig;
 }
