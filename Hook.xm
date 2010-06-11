@@ -300,7 +300,7 @@ static void CDUpdatePrefs() {
 %hook SBApplicationIcon
 %new(c@:)
 -(BOOL)cydelete_allowsUninstall {
-	NSString *bundle = [self displayIdentifier];
+	NSString *bundle = [[self application] displayIdentifier];
 	if(([bundle hasPrefix:@"com.apple."] && ![bundle hasPrefix:@"com.apple.samplecode."])
 	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
 	|| [bundle hasPrefix:@"com.bigboss.categories."]
@@ -329,7 +329,7 @@ static void CDUpdatePrefs() {
 
 %new(v@:)
 -(void)cydelete_uninstallClicked {
-	if(![[iconPackagesDict allKeys] containsObject:[self displayIdentifier]]) {
+	if(![[iconPackagesDict allKeys] containsObject:[[self application] displayIdentifier]]) {
 		SBApplication *app = [self application];
 		NSString *bundle = [app bundleIdentifier];
 		id _pkgName;
@@ -340,7 +340,7 @@ static void CDUpdatePrefs() {
 		} else {
 			_pkgName = ownerForSBApplication(app);
 		}
-		[iconPackagesDict setObject:_pkgName forKey:[self displayIdentifier]];
+		[iconPackagesDict setObject:_pkgName forKey:[[self application] displayIdentifier]];
 	}
 }
 
@@ -376,18 +376,18 @@ static void CDUpdatePrefs() {
 
 -(NSString *)uninstallAlertTitle {
 	return [NSString stringWithFormat:SBLocalizedString(@"UNINSTALL_ICON_TITLE"),
-					[self displayName]];
+					[[self application] displayName]];
 }
 
 -(NSString *)uninstallAlertBody {
-	id package = [iconPackagesDict objectForKey:[self displayIdentifier]];
+	id package = [iconPackagesDict objectForKey:[[self application] displayIdentifier]];
 	NSString *body;
 	if(package == [NSNull null])
 		body = [NSString stringWithFormat:SBLocalizedString(@"DELETE_WIDGET_BODY"),
-						[self displayName]];
+						[[self application] displayName]];
 	else
 		body = [NSString stringWithFormat:CDLocalizedString(@"PACKAGE_DELETE_BODY"),
-						[self displayName], package];
+						[[self application] displayName], package];
 	return body;
 }
 
