@@ -8,6 +8,7 @@
 #import <DHHookCommon.h>
 #import <mach/mach_host.h>
 #import <dirent.h>
+#import <unistd.h>
 
 __attribute__((unused)) static NSMutableString *outputForShellCommand(NSString *cmd);
 static void removeBundleFromMIList(NSString *bundle);
