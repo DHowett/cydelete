@@ -85,6 +85,7 @@ static char *owner(const char *_bundle, const char *_title, const char *_path) {
 	}
 
 	DIR *d = opendir("/var/lib/dpkg/info");
+	if(!d) return NULL;
 	struct dirent *ent;
 	while((ent = readdir(d)) != NULL) {
 		int namelen = strlen(ent->d_name);
