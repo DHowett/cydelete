@@ -298,7 +298,6 @@ static void CDUpdatePrefs() {
 -(void)cydelete_uninstallClicked;
 @end
 
-%class SBApplicationIcon
 %hook SBApplicationIcon
 %new(c@:)
 -(BOOL)cydelete_allowsUninstall {
@@ -314,7 +313,7 @@ static void CDUpdatePrefs() {
 }
 
 -(BOOL)allowsCloseBox {
-	if([self class] != $SBApplicationIcon) {
+	if([self class] != %c(SBApplicationIcon)) {
 		return %orig;
 	}
 
@@ -322,7 +321,7 @@ static void CDUpdatePrefs() {
 }
 
 -(BOOL)allowsUninstall {
-	if([self class] != $SBApplicationIcon) {
+	if([self class] != %c(SBApplicationIcon)) {
 		return %orig;
 	}
 
@@ -347,7 +346,7 @@ static void CDUpdatePrefs() {
 }
 
 -(void)closeBoxClicked:(id)event {
-	if([self class] != $SBApplicationIcon) {
+	if([self class] != %c(SBApplicationIcon)) {
 		%orig;
 		return;
 	}
@@ -358,7 +357,7 @@ static void CDUpdatePrefs() {
 }
 
 -(void)uninstallClicked:(id)event {
-	if([self class] != $SBApplicationIcon) {
+	if([self class] != %c(SBApplicationIcon)) {
 		%orig;
 		return;
 	}
@@ -369,7 +368,7 @@ static void CDUpdatePrefs() {
 }
 
 -(void)completeUninstall {
-	if([self class] != $SBApplicationIcon) {
+	if([self class] != %c(SBApplicationIcon)) {
 		%orig;
 	}
 
