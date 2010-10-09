@@ -298,6 +298,36 @@ static void CDUpdatePrefs() {
 -(void)cydelete_uninstallClicked;
 @end
 
+static void uninstallClickedForIcon(SBApplicationIcon *self) {
+	NSLog(@"uninstallClickedForIcon:%@", self);
+	if(![[iconPackagesDict allKeys] containsObject:[[self application] displayIdentifier]]) {
+		SBApplication *app = [self application];
+		NSString *bundle = [app bundleIdentifier];
+		id _pkgName;
+		if([bundle isEqualToString:@"com.ripdev.Installer"]
+		   || [bundle isEqualToString:@"com.ripdev.install"]) {
+			// If we're dealing with Installer, short circuit over the package search. 
+			_pkgName = [NSNull null];
+		} else {
+			_pkgName = ownerForSBApplication(app);
+		}
+		[iconPackagesDict setObject:_pkgName forKey:[[self application] displayIdentifier]];
+	}
+}
+
+%hook SBIconController
+- (void)iconCloseBoxTapped:(id)icon {
+	%log;
+	if([icon class] != %c(SBApplicationIcon)) {
+		%orig;
+		return;
+	}
+	uninstallClickedForIcon(icon);
+	%orig;
+	return;
+}
+%end
+
 %hook SBApplicationIcon
 %new(c@:)
 -(BOOL)cydelete_allowsUninstall {
@@ -328,30 +358,13 @@ static void CDUpdatePrefs() {
 	return [self cydelete_allowsUninstall];
 }
 
-%new(v@:)
--(void)cydelete_uninstallClicked {
-	if(![[iconPackagesDict allKeys] containsObject:[[self application] displayIdentifier]]) {
-		SBApplication *app = [self application];
-		NSString *bundle = [app bundleIdentifier];
-		id _pkgName;
-		if([bundle isEqualToString:@"com.ripdev.Installer"]
-		   || [bundle isEqualToString:@"com.ripdev.install"]) {
-			// If we're dealing with Installer, short circuit over the package search. 
-			_pkgName = [NSNull null];
-		} else {
-			_pkgName = ownerForSBApplication(app);
-		}
-		[iconPackagesDict setObject:_pkgName forKey:[[self application] displayIdentifier]];
-	}
-}
-
 -(void)closeBoxClicked:(id)event {
 	if([self class] != %c(SBApplicationIcon)) {
 		%orig;
 		return;
 	}
 
-	[self cydelete_uninstallClicked];
+	uninstallClickedForIcon(self);
 
 	%orig;
 }
@@ -362,7 +375,7 @@ static void CDUpdatePrefs() {
 		return;
 	}
 
-	[self cydelete_uninstallClicked];
+	uninstallClickedForIcon(self);
 
 	%orig;
 }
