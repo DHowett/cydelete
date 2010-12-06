@@ -5,7 +5,6 @@
 #import <SpringBoard/SBIconModel.h>
 #import <SpringBoard/SBApplicationController.h>
 #import <SpringBoard/SBApplication.h>
-#import <DHHookCommon.h>
 #import <mach/mach_host.h>
 #import <dirent.h>
 #import <unistd.h>
@@ -424,7 +423,7 @@ static void reloadPrefsNotification(CFNotificationCenterRef center,
 	CDUpdatePrefs();
 }
 
-static _Constructor void CyDeleteInitialize() {
+%ctor {
 	NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
 
 	%init;
