@@ -14,9 +14,9 @@ __attribute__((unused)) static NSMutableString *outputForShellCommand(NSString *
 static void removeBundleFromMIList(NSString *bundle);
 static void CDUpdatePrefs();
 
-DHLateClass(SBIconModel);
-DHLateClass(SBIconController);
-DHLateClass(SBIcon);
+%class SBIconModel
+%class SBIconController
+%class SBIcon
 
 static NSBundle *cyDelBundle = nil;
 static NSDictionary *cyDelPrefs = nil;
@@ -167,10 +167,11 @@ static id ownerForSBApplication(SBApplication *application) {
 }
 
 - (void)main {
-	DHScopedAutoreleasePool();
+	NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
 	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_nondpkg.sh %@", _path];
 	system([command UTF8String]);
 	[self completeOperation];
+	[p drain];
 }
 
 - (void)dealloc { [_path release]; [super dealloc]; }
@@ -193,18 +194,19 @@ static id ownerForSBApplication(SBApplication *application) {
 }
 
 - (void)main {
-	DHScopedAutoreleasePool();
+	NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
 	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_dpkg.sh %@", _package];
 	NSString *output = outputForShellCommand(command);
 	if(!output) [self performSelectorOnMainThread:@selector(displayError) withObject:nil waitUntilDone:NO];
 	[self completeOperation];
+	[p drain];
 }
 
 - (void)dealloc { [_package release]; [super dealloc]; }
 @end
 
 static void removeBundleFromMIList(NSString *bundle) {
-	NSString *path([NSString stringWithFormat:@"%@/Library/Caches/com.apple.mobile.installation.plist", NSHomeDirectory()]);
+	NSString *path = [NSString stringWithFormat:@"%@/Library/Caches/com.apple.mobile.installation.plist", NSHomeDirectory()];
 	NSMutableDictionary *cache = [[NSMutableDictionary alloc] initWithContentsOfFile:path];
 	[cache autorelease];
 	[[cache objectForKey:@"System"] removeObjectForKey:bundle];
@@ -423,7 +425,7 @@ static void reloadPrefsNotification(CFNotificationCenterRef center,
 }
 
 static _Constructor void CyDeleteInitialize() {
-	DHScopedAutoreleasePool();
+	NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
 
 	%init;
 
@@ -436,4 +438,5 @@ static _Constructor void CyDeleteInitialize() {
 	CFNotificationCenterRef r = CFNotificationCenterGetDarwinNotifyCenter();
 	CFNotificationCenterAddObserver(r, NULL, &reloadPrefsNotification,
 					CFSTR("net.howett.cydelete/ReloadPrefs"), NULL, 0);
+	[p drain];
 }
