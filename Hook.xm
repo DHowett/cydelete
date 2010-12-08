@@ -1,4 +1,3 @@
-#import <UIKit/UIProgressHUD.h>
 #import <SpringBoard/SBIcon.h>
 #import <SpringBoard/SBApplicationIcon.h>
 #import <SpringBoard/SBIconController.h>
