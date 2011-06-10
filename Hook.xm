@@ -316,8 +316,15 @@ static void uninstallClickedForIcon(SBApplicationIcon *self) {
 }
 
 %hook SBIconController
-- (void)iconCloseBoxTapped:(id)icon {
+- (void)iconCloseBoxTapped:(id)_i {
 	%log;
+	SBIcon *icon;
+	if([_i class] == %c(SBIconView)) {
+		icon = [_i icon];
+	} else if([_i class] == %c(SBApplicationIcon)) {
+		icon = _i;
+	}
+
 	if([icon class] != %c(SBApplicationIcon)) {
 		%orig;
 		return;
