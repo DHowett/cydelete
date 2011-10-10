@@ -10,3 +10,4 @@ include framework/makefiles/aggregate.mk
 
 after-stage::
 	find $(FW_STAGING_DIR) -iname '*.plist' -or -iname '*.strings' -exec plutil -convert binary1 {} \;
+	find $(FW_STAGING_DIR) -iname '*.png' -exec pincrush -i {} \;
