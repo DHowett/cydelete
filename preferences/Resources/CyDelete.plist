@@ -28,7 +28,6 @@
 			<key>icon</key>
 			<string>Cydia.png</string>
 			<key>postNotification</key><string>net.howett.cydelete/ReloadPrefs</string>
-			<!--<key>set</key><string>setCydiaProtection:specifier:</string>-->
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -45,20 +44,9 @@
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSTitleValueCell</string>
-			<key>label</key>
-			<string>PROTECTED_WARNING</string>
-			<key>requiredCapabilities</key>
-			<array>
-				<dict>
-					<key>wildcat</key>
-					<false/>
-				</dict>
-			</array>
-		</dict>
-		<dict>
-			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>CyDelete © 2009 Dustin L. Howett</string>
 		</dict>
 		<dict>
 			<key>action</key>
@@ -67,27 +55,6 @@
 			<string>PSButtonCell</string>
 			<key>label</key>
 			<string>DONATE</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>isStaticText</key>
-			<true/>
-			<key>footerText</key>
-			<string>CyDelete © 2009 Dustin L. Howett</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSTitleValueCell</string>
-			<key>label</key>
-			<string>CyDelete © 2009 Dustin L. Howett</string>
-			<key>requiredCapabilities</key>
-			<array>
-				<dict>
-					<key>wildcat</key>
-					<false/>
-				</dict>
-			</array>
 		</dict>
 	</array>
 	<key>title</key>
