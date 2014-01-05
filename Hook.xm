@@ -345,8 +345,8 @@ static void uninstallClickedForIcon(SBApplicationIcon *self) {
 		return;
 	}
 	[[%c(SBApplicationController) sharedInstance] uninstallApplication:(SBApplicationIcon *) [icon application]];
-	[((SBIcon *) icon) setUninstalled];
 	[self removeIcon:icon compactFolder:YES];
+	[[self model] removeIcon:icon];
 }
 
 - (void)iconCloseBoxTapped:(id)_i {
