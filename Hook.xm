@@ -194,8 +194,7 @@ static id ownerForSBApplication(SBApplication *application) {
 - (void)main {
 	NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
 	NSString *command = [NSString stringWithFormat:@"/usr/libexec/cydelete/setuid /usr/libexec/cydelete/uninstall_dpkg.sh %@", _package];
-	NSString *output = outputForShellCommand(command);
-	if(!output) [self performSelectorOnMainThread:@selector(displayError) withObject:nil waitUntilDone:NO];
+	if(system([command UTF8String])) [self performSelectorOnMainThread:@selector(displayError) withObject:nil waitUntilDone:NO];
 	[self completeOperation];
 	[p drain];
 }
@@ -346,6 +345,7 @@ static void uninstallClickedForIcon(SBApplicationIcon *self) {
 		return;
 	}
 	[[%c(SBApplicationController) sharedInstance] uninstallApplication:(SBApplicationIcon *) [icon application]];
+	[((SBIcon *) icon) setUninstalled];
 	[self removeIcon:icon compactFolder:YES];
 }
 
