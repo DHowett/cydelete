@@ -5,11 +5,11 @@ Conflicts: com.sosiphone.cydeletefr
 Version: 2.1
 Architecture: iphoneos-arm
 Description: Delete Cydia packages from SpringBoard, just like App Store applications!
-Maintainer: Dustin Howett <dustin@howett.net>
-Author: Dustin Howett <dustin@howett.net>
+Maintainer: Dustin Howett & Arcterus <dustin@howett.net>
+Author: Dustin Howett & Arcterus <dustin@howett.net>
 Section: Tweaks
 Depiction: http://moreinfo.thebigboss.org/moreinfo/cydeleteDp.php
 Homepage: http://howett.net/cydia/depict/cydelete.html
-dev: dustinhowett
+dev: dustinhowett, arcterus
 Sponsor: thebigboss.org <http://thebigboss.org>
 Tag: purpose::extension, role::enduser
