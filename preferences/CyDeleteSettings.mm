@@ -1,5 +1,7 @@
 #import <Preferences/PSSpecifier.h>
 #import <Preferences/PSListController.h>
+#import <UIKit/UIDevice.h>
+#import <UIKit/UIApplication.h>
 
 static CFNotificationCenterRef darwinNotifyCenter = CFNotificationCenterGetDarwinNotifyCenter();
 

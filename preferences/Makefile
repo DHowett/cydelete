@@ -6,5 +6,5 @@ CyDeleteSettings_INSTALL_PATH = /Library/PreferenceBundles
 CyDeleteSettings_FRAMEWORKS = UIKit
 CyDeleteSettings_PRIVATE_FRAMEWORKS = Preferences
 
-include ../framework/makefiles/common.mk
-include ../framework/makefiles/bundle.mk
+include $(THEOS)/makefiles/common.mk
+include $(THEOS)/makefiles/bundle.mk

@@ -2,8 +2,12 @@
 #import <SpringBoard/SBApplicationIcon.h>
 #import <SpringBoard/SBIconController.h>
 #import <SpringBoard/SBIconModel.h>
+#import <SpringBoard/SBIconView.h>
 #import <SpringBoard/SBApplicationController.h>
 #import <SpringBoard/SBApplication.h>
+#import <SpringBoard/SBWebApplication.h>
+#import <SpringBoard/SBWebApplicationIcon.h>
+#import <UIKit/UIAlertView.h>
 #import <mach/mach_host.h>
 #import <dirent.h>
 #import <unistd.h>
@@ -11,10 +15,6 @@
 __attribute__((unused)) static NSMutableString *outputForShellCommand(NSString *cmd);
 static void removeBundleFromMIList(NSString *bundle);
 static void CDUpdatePrefs();
-
-%class SBIconModel
-%class SBIconController
-%class SBIcon
 
 static NSBundle *cyDelBundle = nil;
 static NSDictionary *cyDelPrefs = nil;
@@ -224,7 +224,7 @@ __attribute__((unused)) static NSMutableString *outputForShellCommand(NSString *
 
 	fgets(buf, 1024, fp);
 	NSLog(@"CD: received %s", buf);
-	finalRet = [NSString stringWithUTF8String:buf];
+	finalRet = [NSMutableString stringWithUTF8String:buf];
 	NSLog(@"CD: Turned into %@", finalRet);
 
 	if(pclose(fp) != 0) {
@@ -250,7 +250,7 @@ static void CDUpdatePrefs() {
 	}
 
 	// If the application is running, kill it.
-	[application kill];
+	[application deactivate];  // XXX: this was -kill, -deactivate may not be right
 
 	id package = [iconPackagesDict objectForKey:[application displayIdentifier]];
 
@@ -283,11 +283,11 @@ static void CDUpdatePrefs() {
 			NSString *bundle = [curApp bundleIdentifier];
 			if(![bundle hasPrefix:@"jp.ashikase.springjumps."])
 				continue;
-			SBIcon *curIcon = [[$SBIconModel sharedInstance] iconForDisplayIdentifier:[curApp displayIdentifier]];
+			SBIcon *curIcon = [[%c(SBIconModel) sharedInstance] applicationIconForDisplayIdentifier:[curApp displayIdentifier]];
 			if(!curIcon) continue;
 			removeBundleFromMIList(bundle);
 			[self removeApplicationsFromModelWithBundleIdentifier:bundle];
-			[[$SBIconController sharedInstance] removeIcon:curIcon animate:YES];
+			[[%c(SBIconController) sharedInstance] uninstallIcon:curIcon animate:YES];
 		}
 	}
 }
@@ -295,7 +295,10 @@ static void CDUpdatePrefs() {
 
 @interface SBApplicationIcon (CyDelete)
 -(BOOL)cydelete_allowsUninstall;
--(void)cydelete_uninstallClicked;
+@end
+
+@interface SBIconController (CyDelete)
+-(BOOL)cydelete_allowsUninstall:(id)icon;
 @end
 
 static void uninstallClickedForIcon(SBApplicationIcon *self) {
@@ -316,11 +319,41 @@ static void uninstallClickedForIcon(SBApplicationIcon *self) {
 }
 
 %hook SBIconController
+%new(c@:)
+-(BOOL)cydelete_allowsUninstall:(id)icon {
+	NSString *bundle = [[((SBApplicationIcon *) icon) application] displayIdentifier];
+	if(([bundle hasPrefix:@"com.apple."] && ![bundle hasPrefix:@"com.apple.samplecode."])
+	|| ([bundle isEqualToString:@"com.saurik.Cydia"] && CDGetBoolPref(@"CDProtectCydia", true))
+	|| [bundle hasPrefix:@"com.bigboss.categories."]
+	|| [bundle hasPrefix:@"jp.ashikase.springjumps."]
+	|| [bundle hasPrefix:@"com.steventroughtonsmith.stack"])
+		return NO;
+	if(getFreeMemory() < 20) return NO;
+	else return YES;
+}
+
+-(BOOL)canUninstallIcon:(id)icon {
+	if([icon class] != %c(SBApplicationIcon)) {
+		return %orig;
+	}
+
+	return [self cydelete_allowsUninstall:icon];
+}
+
+- (void)uninstallIconAnimationCompletedForIcon:(id)icon {
+	if([icon class] != %c(SBApplicationIcon)) {
+		%orig;
+		return;
+	}
+	[[%c(SBApplicationController) sharedInstance] uninstallApplication:(SBApplicationIcon *) [icon application]];
+	[self removeIcon:icon compactFolder:YES];
+}
+
 - (void)iconCloseBoxTapped:(id)_i {
 	%log;
 	SBIcon *icon = nil;
 	if([_i class] == %c(SBIconView)) {
-		icon = [_i icon];
+		icon = [((SBIconView *) _i) icon];
 	} else if([_i class] == %c(SBApplicationIcon)) {
 		icon = _i;
 	}
@@ -329,10 +362,11 @@ static void uninstallClickedForIcon(SBApplicationIcon *self) {
 		%orig;
 		return;
 	}
-	uninstallClickedForIcon(icon);
+	uninstallClickedForIcon((SBApplicationIcon *) icon);
 	%orig;
 	return;
 }
+
 %end
 
 %hook SBApplicationIcon
@@ -349,50 +383,12 @@ static void uninstallClickedForIcon(SBApplicationIcon *self) {
 	else return YES;
 }
 
--(BOOL)allowsCloseBox {
-	if([self class] != %c(SBApplicationIcon)) {
-		return %orig;
-	}
-
-	return [self cydelete_allowsUninstall];
-}
-
 -(BOOL)allowsUninstall {
 	if([self class] != %c(SBApplicationIcon)) {
 		return %orig;
 	}
 
 	return [self cydelete_allowsUninstall];
-}
-
--(void)closeBoxClicked:(id)event {
-	if([self class] != %c(SBApplicationIcon)) {
-		%orig;
-		return;
-	}
-
-	uninstallClickedForIcon(self);
-
-	%orig;
-}
-
--(void)uninstallClicked:(id)event {
-	if([self class] != %c(SBApplicationIcon)) {
-		%orig;
-		return;
-	}
-
-	uninstallClickedForIcon(self);
-
-	%orig;
-}
-
--(void)completeUninstall {
-	if([self class] != %c(SBApplicationIcon)) {
-		%orig;
-	}
-
-	[[$SBIconModel sharedInstance] uninstallApplicationIcon:self];
 }
 
 -(NSString *)uninstallAlertTitle {
