@@ -12,6 +12,10 @@
 #import <dirent.h>
 #import <unistd.h>
 
+#ifndef kCFCoreFoundationVersionNumber_iOS_6_0
+#define kCFCoreFoundationVersionNumber_iOS_6_0 793.00
+#endif
+
 __attribute__((unused)) static NSMutableString *outputForShellCommand(NSString *cmd);
 static void removeBundleFromMIList(NSString *bundle);
 static void CDUpdatePrefs();
@@ -249,7 +253,11 @@ static void CDUpdatePrefs() {
 	}
 
 	// If the application is running, kill it.
-	[application deactivate];  // XXX: this was -kill, -deactivate may not be right
+	if(kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_6_0) {
+		[application deactivate];  // XXX: this may not be right
+	} else {
+		[application kill];
+	}
 
 	id package = [iconPackagesDict objectForKey:[application displayIdentifier]];
 
@@ -332,7 +340,8 @@ static void uninstallClickedForIcon(SBApplicationIcon *self) {
 }
 
 -(BOOL)canUninstallIcon:(id)icon {
-	if([icon class] != %c(SBApplicationIcon)) {
+	if(kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_6_0
+	|| [icon class] != %c(SBApplicationIcon)) {
 		return %orig;
 	}
 
@@ -340,7 +349,8 @@ static void uninstallClickedForIcon(SBApplicationIcon *self) {
 }
 
 - (void)uninstallIconAnimationCompletedForIcon:(id)icon {
-	if([icon class] != %c(SBApplicationIcon)) {
+	if(kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_6_0
+	|| [icon class] != %c(SBApplicationIcon)) {
 		%orig;
 		return;
 	}
@@ -366,7 +376,6 @@ static void uninstallClickedForIcon(SBApplicationIcon *self) {
 	%orig;
 	return;
 }
-
 %end
 
 %hook SBApplicationIcon
@@ -381,6 +390,40 @@ static void uninstallClickedForIcon(SBApplicationIcon *self) {
 		return NO;
 	if(getFreeMemory() < 20) return NO;
 	else return YES;
+}
+
+-(BOOL)allowsCloseBox {
+	if(kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_6_0
+	|| [self class] != %c(SBApplicationIcon)) {
+		return %orig;
+	}
+
+	return [self cydelete_allowsUninstall];
+}
+
+-(void)closeBoxClicked:(id)event {
+	if(kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_6_0
+	&& [self class] == %c(SBApplicationIcon)) {
+		uninstallClickedForIcon(self);
+	}
+	%orig;
+}
+
+-(void)uninstallClicked:(id)event {
+	if(kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_6_0
+	&& [self class] == %c(SBApplicationIcon)) {
+		uninstallClickedForIcon(self);
+	}
+	%orig;
+}
+
+-(void)completeUninstall {
+	if([self class] != %c(SBApplicationIcon)) {
+		%orig;
+	}
+	if(kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_6_0) {
+		[[%c(SBIconModel) sharedInstance] uninstallApplicationIcon:self];
+	}
 }
 
 -(BOOL)allowsUninstall {

@@ -4,10 +4,15 @@ CyDelete_FRAMEWORKS := UIKit
 
 SUBPROJECTS := setuid preferences
 
-CFLAGS += -I SpringBoard
+ADDITIONAL_CFLAGS := -I SpringBoard
 
-TARGET := iphone:7.0:6.0
-ARCHS := arm64 armv7
+export TARGET := iphone:clang
+export ARCHS := arm64 armv6
+
+export THEOS_PLATFORM_SDK_ROOT_armv6 := /Applications/Xcode_armv6.app/Contents/Developer
+export SDKVERSION_armv6 := 5.0
+export TARGET_IPHONEOS_DEPLOYMENT_VERSION := 3.0
+export TARGET_IPHONEOS_DEPLOYMENT_VERSION_arm64 := 7.0
 
 include $(THEOS)/makefiles/common.mk
 include $(THEOS)/makefiles/tweak.mk
