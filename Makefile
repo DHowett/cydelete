@@ -4,8 +4,6 @@ CyDelete_FRAMEWORKS := UIKit
 
 SUBPROJECTS := setuid preferences
 
-ADDITIONAL_CFLAGS := -I SpringBoard
-
 export TARGET := iphone:clang
 export ARCHS := arm64 armv6
 
