@@ -5,8 +5,6 @@
 #import <SpringBoard/SBIconView.h>
 #import <SpringBoard/SBApplicationController.h>
 #import <SpringBoard/SBApplication.h>
-#import <SpringBoard/SBWebApplication.h>
-#import <SpringBoard/SBWebApplicationIcon.h>
 #import <UIKit/UIAlertView.h>
 #import <mach/mach_host.h>
 #import <dirent.h>
@@ -288,11 +286,20 @@ static void CDUpdatePrefs() {
 			NSString *bundle = [curApp bundleIdentifier];
 			if(![bundle hasPrefix:@"jp.ashikase.springjumps."])
 				continue;
-			SBIcon *curIcon = [[%c(SBIconModel) sharedInstance] applicationIconForDisplayIdentifier:[curApp displayIdentifier]];
+			SBIcon *curIcon = nil;
+			if(kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_6_0) {
+				curIcon = [[%c(SBIconModel) sharedInstance] iconForDisplayIdentifier:[curApp displayIdentifier]];
+			} else {
+				curIcon = [[%c(SBIconModel) sharedInstance] applicationIconForDisplayIdentifier:[curApp displayIdentifier]];
+			}
 			if(!curIcon) continue;
 			removeBundleFromMIList(bundle);
 			[self removeApplicationsFromModelWithBundleIdentifier:bundle];
-			[[%c(SBIconController) sharedInstance] uninstallIcon:curIcon animate:YES];
+			if(kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_6_0) {
+				[[%c(SBIconController) sharedInstance] removeIcon:curIcon animate:YES];
+			} else {
+				[[%c(SBIconController) sharedInstance] uninstallIcon:curIcon animate:YES];
+			}
 		}
 	}
 }
