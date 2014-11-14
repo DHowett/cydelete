@@ -2,3 +2,6 @@
 if [[ -e /var/log/CYDELETE.log ]]; then
 	rm -f /var/log/CYDELETE.log
 fi
+chmod 6755 /usr/libexec/cydelete/setuid
+chown root /usr/libexec/cydelete/setuid
+chgrp wheel /usr/libexec/cydelete/setuid
